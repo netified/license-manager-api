@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LicenseManager.Api.Data.Shared\LicenseManager.Api.Data.Shared.csproj" />
+    <ProjectReference Include="..\LicenseManager.Api.Data\LicenseManager.Api.Data.csproj" />
+  </ItemGroup>
+
+
+</Project>
+  
