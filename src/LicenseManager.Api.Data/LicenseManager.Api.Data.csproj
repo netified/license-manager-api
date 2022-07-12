@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.6" />
     <PackageReference Include="Netboot.LicenseManager" Version="6.0.1" />
+    <PackageReference Include="Netified.LicenseManager.Api.Abstractions" Version="1.1.1" />
   </ItemGroup>
   
 </Project>
