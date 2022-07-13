@@ -18,8 +18,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+using LicenseManager.Api.Abstractions;
 using LicenseManager.Api.Data.Abstracts;
-using LicenseManager.Api.Data.Enum;
 using System;
 using System.Collections.Generic;
 
