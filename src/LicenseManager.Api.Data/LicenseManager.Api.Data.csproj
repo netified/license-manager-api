@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.7" />
     <PackageReference Include="Netboot.LicenseManager" Version="6.0.1" />
-    <PackageReference Include="Netified.LicenseManager.Api.Abstractions" Version="1.1.1" />
+    <PackageReference Include="Netified.LicenseManager.Api.Abstractions" Version="1.2.0" />
   </ItemGroup>
   
 </Project>
