@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.1.2" />
+    <PackageReference Include="Sieve" Version="2.5.5" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\LicenseManager.Api.Data.PostgreSQL\LicenseManager.Api.Data.PostgreSQL.csproj" />
+    <ProjectReference Include="..\LicenseManager.Api.Data.SQLServer\LicenseManager.Api.Data.SQLServer.csproj" />
+  </ItemGroup>
+
+</Project>
