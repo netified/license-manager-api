@@ -29,6 +29,9 @@ namespace LicenseManager.Api.Domain.Models
     /// </summary>
     public class ProductRequestProfile : Profile
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductRequestProfile"/> class.
+        /// </summary>
         public ProductRequestProfile()
         {
             CreateMap<ProductRequest, ProductEntity>();

@@ -29,6 +29,9 @@ namespace LicenseManager.Api.Domain.Models
     /// </summary>
     public class LicenseBackupProfile : Profile
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LicenseBackupProfile"/> class.
+        /// </summary>
         public LicenseBackupProfile()
         {
             CreateMap<LicenseEntity, LicenseBackup>().ReverseMap();

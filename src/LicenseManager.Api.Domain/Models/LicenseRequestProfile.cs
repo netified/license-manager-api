@@ -30,6 +30,9 @@ namespace LicenseManager.Api.Domain.Models
     /// </summary>
     public class LicenseRequestProfile : Profile
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LicenseRequestProfile"/> class.
+        /// </summary>
         public LicenseRequestProfile()
         {
             CreateMap<LicenseRequest, LicenseEntity>()

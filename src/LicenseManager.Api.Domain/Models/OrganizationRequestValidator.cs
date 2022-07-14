@@ -28,6 +28,9 @@ namespace LicenseManager.Api.Domain.Models
     /// </summary>
     public class OrganizationRequestValidator : AbstractValidator<OrganizationRequest>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrganizationRequestValidator"/> class.
+        /// </summary>
         public OrganizationRequestValidator()
         {
             RuleFor(x => x.Name).NotEmpty();

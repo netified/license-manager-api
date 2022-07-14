@@ -29,6 +29,9 @@ namespace LicenseManager.Api.Domain.Models
     /// </summary>
     public class ProductBackupProfile : Profile
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductBackupProfile"/> class.
+        /// </summary>
         public ProductBackupProfile()
         {
             CreateMap<ProductEntity, ProductBackup>()

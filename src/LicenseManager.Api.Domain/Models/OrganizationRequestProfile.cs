@@ -29,6 +29,9 @@ namespace LicenseManager.Api.Domain.Models
     /// </summary>
     public class OrganizationRequestProfile : Profile
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrganizationRequestProfile"/> class.
+        /// </summary>
         public OrganizationRequestProfile()
         {
             CreateMap<OrganizationRequest, OrganizationEntity>();

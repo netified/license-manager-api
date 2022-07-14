@@ -28,6 +28,9 @@ namespace LicenseManager.Api.Domain.Models
     /// </summary>
     public class ProductRequestValidator : AbstractValidator<ProductRequest>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductRequestValidator"/> class.
+        /// </summary>
         public ProductRequestValidator()
         {
             RuleFor(x => x.Name).NotEmpty();
