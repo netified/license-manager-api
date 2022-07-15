@@ -20,7 +20,7 @@
 
 namespace LicenseManager.Api.Configuration
 {
-    public class DataProtectionConfiguration
+    public class DatabaseProtectionConfiguration
     {
         public bool ProtectKeysWithAzureKeyVault { get; set; }
     }

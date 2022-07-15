@@ -48,7 +48,7 @@ namespace LicenseManager.Api.Configuration
         /// <summary>
         /// The settings for data protection.
         /// </summary>
-        public DataProtectionConfiguration DataProtection { get; set; } = new DataProtectionConfiguration();
+        public DatabaseProtectionConfiguration DataProtection { get; set; } = new DatabaseProtectionConfiguration();
 
         /// <summary>
         /// The settings for Azure key vault.
@@ -70,7 +70,7 @@ namespace LicenseManager.Api.Configuration
             configuration.GetSection("ConnectionStrings").Bind(ConnectionStrings);
             configuration.GetSection(nameof(DatabaseProviderConfiguration)).Bind(DatabaseProvider);
             configuration.GetSection(nameof(DatabaseMigrationsConfiguration)).Bind(DatabaseMigrations);
-            configuration.GetSection(nameof(DataProtectionConfiguration)).Bind(DataProtection);
+            configuration.GetSection(nameof(DatabaseProtectionConfiguration)).Bind(DataProtection);
             configuration.GetSection(nameof(AzureKeyVaultConfiguration)).Bind(AzureKeyVault);
             configuration.GetSection(nameof(IdentityConfiguration)).Bind(Identity);
         }
