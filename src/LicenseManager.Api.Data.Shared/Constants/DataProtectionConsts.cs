@@ -22,6 +22,7 @@ namespace LicenseManager.Api.Data.Shared.Constants
 {
     public class DataProtectionConsts
     {
-        public const string DefaultPurpose = "Netified.LicensingManager";
+        public const string DefaultPurpose = "Netified.LicenseManager";
+        public const string ApplicationName = "LicenseManager";
     }
 }
