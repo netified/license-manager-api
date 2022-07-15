@@ -19,6 +19,7 @@
 // IN THE SOFTWARE.
 
 using LicenseManager.Api.Configuration;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Reflection;
@@ -37,6 +38,19 @@ namespace LicenseManager.Api.Service.Extensions
             // Get swagger configurations.
             var swaggerConfiguration = new SwaggerConfiguration();
             configuration.GetSection(nameof(SwaggerConfiguration)).Bind(swaggerConfiguration);
+
+            services.AddApiVersioning(setup =>
+            {
+                setup.DefaultApiVersion = new ApiVersion(1, 0);
+                setup.AssumeDefaultVersionWhenUnspecified = true;
+                setup.ReportApiVersions = true;
+            });
+
+            services.AddVersionedApiExplorer(setup =>
+            {
+                setup.GroupNameFormat = "'v'VVV";
+                setup.SubstituteApiVersionInUrl = true;
+            });
 
             services.AddSwaggerGen(c =>
                 {
@@ -138,7 +152,7 @@ namespace LicenseManager.Api.Service.Extensions
                 c.OAuthUsePkce();
 
                 // Add swagger endpoint.
-                c.SwaggerEndpoint($"{swaggerConfiguration.Prefix}/docs/v1/swagger.json", "Software license management");
+                c.SwaggerEndpoint($"{swaggerConfiguration.Prefix}/docs/v1/swagger.json", "License Manager - V1");
             });
         }
     }
