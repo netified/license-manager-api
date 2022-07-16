@@ -98,20 +98,23 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// Set the current user's default organization.
+        /// Update current user default organization.
         /// </summary>
+        /// <remarks>
+        /// The default organization is used for the administration website.
+        /// </remarks>
         /// <param name="organizationId">The organization identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <response code="202">The request has been accepted</response>
+        /// <response code="204">A blank response is returned if the user was successfully updated.</response>
         /// <response code="401">Access to this resource requires authentication</response>
         /// <returns>Nothing</returns>
-        [HttpPost("me/organizations/{organizationId:guid}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPut("me/organizations/{organizationId:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> SetOrganizationAsync(Guid organizationId, CancellationToken cancellationToken)
         {
             await _userService.SetDefaultOrganizationAsync(organizationId, cancellationToken);
-            return Ok();
+            return NoContent();
         }
     }
 }
