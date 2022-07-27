@@ -7,15 +7,17 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Src/LicenseManager.Api.Service/LicenseManager.Api.Service.csproj", "Src/LicenseManager.Api.Service/"]
-COPY ["Src/LicenseManager.Api.Domain/LicenseManager.Api.Domain.csproj", "Src/LicenseManager.Api.Domain/"]
-COPY ["Src/LicenseManager.Api.Data.PostgreSQL/LicenseManager.Api.Data.PostgreSQL.csproj", "Src/LicenseManager.Api.Data.PostgreSQL/"]
-COPY ["Src/LicenseManager.Api.Data/LicenseManager.Api.Data.csproj", "Src/LicenseManager.Api.Data/"]
-COPY ["Src/LicenseManager.Api.Data.Shared/LicenseManager.Api.Data.Shared.csproj", "Src/LicenseManager.Api.Data.Shared/"]
-COPY ["Src/LicenseManager.Api.Data.Configuration/LicenseManager.Api.Data.Configuration.csproj", "Src/LicenseManager.Api.Data.Configuration/"]
-RUN dotnet restore "Src/LicenseManager.Api.Service/LicenseManager.Api.Service.csproj"
+COPY ["src/LicenseManager.Api.Service/LicenseManager.Api.Service.csproj", "src/LicenseManager.Api.Service/"]
+COPY ["src/LicenseManager.Api.Domain/LicenseManager.Api.Domain.csproj", "src/LicenseManager.Api.Domain/"]
+COPY ["src/LicenseManager.Api.Data.SQLServer/LicenseManager.Api.Data.SQLServer.csproj", "src/LicenseManager.Api.Data.SQLServer/"]
+COPY ["src/LicenseManager.Api.Data/LicenseManager.Api.Data.csproj", "src/LicenseManager.Api.Data/"]
+COPY ["src/LicenseManager.Api.Data.Shared/LicenseManager.Api.Data.Shared.csproj", "src/LicenseManager.Api.Data.Shared/"]
+COPY ["src/LicenseManager.Api.Data.Configuration/LicenseManager.Api.Data.Configuration.csproj", "src/LicenseManager.Api.Data.Configuration/"]
+COPY ["src/LicenseManager.Api.Configuration/LicenseManager.Api.Configuration.csproj", "src/LicenseManager.Api.Configuration/"]
+COPY ["src/LicenseManager.Api.Data.PostgreSQL/LicenseManager.Api.Data.PostgreSQL.csproj", "src/LicenseManager.Api.Data.PostgreSQL/"]
+RUN dotnet restore "src/LicenseManager.Api.Service/LicenseManager.Api.Service.csproj"
 COPY . .
-WORKDIR "/src/Src/LicenseManager.Api.Service"
+WORKDIR "/src/src/LicenseManager.Api.Service"
 RUN dotnet build "LicenseManager.Api.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
