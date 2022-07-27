@@ -1,0 +1,33 @@
+name: Main workflow
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.gitignore'
+      - '**/*.gitattributes'
+  workflow_dispatch:
+
+jobs:
+  build-solution:
+    uses: './.github/workflows/build-solution.yml'
+    with:
+      dotnet-version: '6.0.x'
+  test-solution:
+    needs: [build-solution]
+    uses: './.github/workflows/test-solution.yml'
+    with:
+      dotnet-version: '6.0.x'
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+  pack-solution:
+    needs: [test-solution]
+    uses: './.github/workflows/pack-solution.yml'
+    with:
+      dotnet-version: '6.0.x'
+  build-docker:
+    needs: [pack-solution]
+    uses: './.github/workflows/build-image.yml'

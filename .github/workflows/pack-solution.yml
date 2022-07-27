@@ -1,0 +1,47 @@
+name: Pack solution
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Install dotnet SDK ${{ inputs.dotnet-version }}
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+    - name: Pack for publish
+      run: dotnet pack --output ./artifacts --configuration Release -p:PackageVersion=${{ github.event.release.tag_name }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: build-release-output
+        path: ./artifacts
+
+  develop:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Install dotnet SDK ${{ inputs.dotnet-version }}
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+    - name: Pack
+      run: dotnet pack --output ./artifacts --configuration Debug
+    - uses: actions/upload-artifact@v3
+      with:
+        name: build-debug-output
+        path: ./artifacts
