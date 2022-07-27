@@ -30,5 +30,6 @@ namespace LicenseManager.Api.Configuration
         public Uri TokenUrl { get; set; }
         public Dictionary<string, string> Scopes { get; set; }
         public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
     }
 }

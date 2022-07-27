@@ -83,7 +83,7 @@ namespace LicenseManager.Api.Service.Extensions
                         BearerFormat = "JWT",
 
                         Flows = new OpenApiOAuthFlows
-                        {
+                        {             
                             AuthorizationCode = new OpenApiOAuthFlow
                             {
                                 AuthorizationUrl = swaggerConfiguration.AuthorizationUrl,
@@ -148,6 +148,8 @@ namespace LicenseManager.Api.Service.Extensions
 
                 // Set OAuth configuration.
                 c.OAuthClientId(swaggerConfiguration.ClientId);
+                if(!string.IsNullOrEmpty(swaggerConfiguration.ClientSecret))
+                    c.OAuthClientSecret(swaggerConfiguration.ClientSecret);
                 c.OAuthScopes(swaggerConfiguration.Scopes?.Keys.ToArray());
                 c.OAuthUsePkce();
 
