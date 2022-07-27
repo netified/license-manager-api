@@ -58,12 +58,12 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PagedResult<Product>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<Abstractions.Product>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<PagedResult<Product>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<Abstractions.Product>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
         {
             var entities = await _productService.ListAsync(request, cancellationToken);
-            return Ok(_mapper.Map<PagedResult<Product>>(entities));
+            return Ok(_mapper.Map<PagedResult<Abstractions.Product>>(entities));
         }
 
         /// <summary>
@@ -73,14 +73,14 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(Product), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<Product>> AddAsync(ProductRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<Abstractions.Product>> AddAsync(ProductRequest request, CancellationToken cancellationToken)
         {
             var entity = await _productService.AddAsync(request, cancellationToken);
-            var entityDto = _mapper.Map<Product>(entity);
+            var entityDto = _mapper.Map<Abstractions.Product>(entity);
             return CreatedAtAction(
                 actionName: nameof(GetAsync),
                 routeValues: new { productId = entity.Id },
@@ -94,14 +94,14 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("import")]
-        [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<ProductEntity>> ImportAsync(ProductBackup product, CancellationToken cancellationToken, bool checksumValidation = true)
+        public async Task<ActionResult<Abstractions.Product>> ImportAsync(ProductBackup product, CancellationToken cancellationToken, bool checksumValidation = true)
         {
             var entity = await _productService.ImportAsync(product, checksumValidation, cancellationToken);
-            return Ok(_mapper.Map<Product>(entity));
+            return Ok(_mapper.Map<Abstractions.Product>(entity));
         }
 
         /// <summary>
@@ -111,13 +111,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("{productId:guid}")]
-        [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Product>> GetAsync(Guid productId, CancellationToken cancellationToken)
+        public async Task<ActionResult<Abstractions.Product>> GetAsync(Guid productId, CancellationToken cancellationToken)
         {
             var entity = await _productService.GetAsync(productId, cancellationToken);
-            return Ok(_mapper.Map<Product>(entity));
+            return Ok(_mapper.Map<Abstractions.Product>(entity));
         }
 
         /// <summary>
@@ -128,13 +128,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("{productId:guid}")]
-        [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Product>> UpdateAsync(Guid productId, ProductRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<Abstractions.Product>> UpdateAsync(Guid productId, ProductRequest request, CancellationToken cancellationToken)
         {
             var entity = await _productService.UpdateAsync(productId, request, cancellationToken);
-            return Ok(_mapper.Map<Product>(entity));
+            return Ok(_mapper.Map<Abstractions.Product>(entity));
         }
 
         /// <summary>
