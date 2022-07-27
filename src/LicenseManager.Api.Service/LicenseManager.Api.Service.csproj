@@ -25,8 +25,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Netboot.Utility.Logging" Version="6.4.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.3.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
