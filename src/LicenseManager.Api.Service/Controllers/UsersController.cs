@@ -69,12 +69,12 @@ namespace LicenseManager.Api.Service.Controllers
         /// <response code="401">Access to this resource requires authentication</response>
         /// <returns>List of all user objects</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PagedResult<User>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<UserDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<PagedResult<User>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<UserDto>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
         {
             var entities = await _userService.ListAsync(request, cancellationToken);
-            return Ok(_mapper.Map<PagedResult<User>>(entities));
+            return Ok(_mapper.Map<PagedResult<UserDto>>(entities));
         }
 
         /// <summary>
@@ -89,12 +89,12 @@ namespace LicenseManager.Api.Service.Controllers
         /// <response code="401">Access to this resource requires authentication</response>
         /// <returns>Single user object</returns>
         [HttpGet("me")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<User>> GetCurrentAsync(CancellationToken cancellationToken)
+        public async Task<ActionResult<UserDto>> GetCurrentAsync(CancellationToken cancellationToken)
         {
             var entity = await _userService.GetCurrentAsync(cancellationToken);
-            return Ok(_mapper.Map<User>(entity));
+            return Ok(_mapper.Map<UserDto>(entity));
         }
 
         /// <summary>

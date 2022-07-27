@@ -35,7 +35,7 @@ namespace LicenseManager.Api.Data.Entities
         public Guid Id { get; set; }
         public Guid OrganizationId { get; set; }
         public Guid UserId { get; set; }
-        public OrganizationRole Role { get; set; }
+        public OrganizationRoleType Role { get; set; }
 
         #endregion Data
 

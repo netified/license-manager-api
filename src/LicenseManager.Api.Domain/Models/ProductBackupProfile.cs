@@ -34,7 +34,7 @@ namespace LicenseManager.Api.Domain.Models
         /// </summary>
         public ProductBackupProfile()
         {
-            CreateMap<ProductEntity, ProductBackup>()
+            CreateMap<ProductEntity, ProductBackupDto>()
                 .ForMember(dest => dest.PassPhrase, o => o.Ignore())
                 .ForMember(dest => dest.PrivateKey, o => o.Ignore())
                 .ForMember(dest => dest.PublicKey, o => o.Ignore())

@@ -119,7 +119,7 @@ public class UserService
                 new UserOrganizationEntity()
                 {
                     UserId = userIdentity.Id,
-                    Role = OrganizationRole.Owner
+                    Role = OrganizationRoleType.Owner
                 }
             }
             };

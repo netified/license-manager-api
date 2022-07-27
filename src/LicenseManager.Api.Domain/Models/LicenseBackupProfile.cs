@@ -34,7 +34,7 @@ namespace LicenseManager.Api.Domain.Models
         /// </summary>
         public LicenseBackupProfile()
         {
-            CreateMap<LicenseEntity, LicenseBackup>().ReverseMap();
+            CreateMap<LicenseEntity, LicenseBackupDto>().ReverseMap();
         }
     }
 }

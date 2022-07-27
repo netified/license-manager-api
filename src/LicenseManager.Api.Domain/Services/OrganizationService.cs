@@ -109,7 +109,7 @@ namespace LicenseManager.Api.Domain.Services
                 new UserOrganizationEntity()
                 {
                     UserId = userId,
-                    Role = OrganizationRole.Owner
+                    Role = OrganizationRoleType.Owner
                 }
             };
 
@@ -188,7 +188,7 @@ namespace LicenseManager.Api.Domain.Services
         /// <param name="userId">The user identifier.</param>
         /// <param name="role">The role.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task UpdateRoleMemberAsync(Guid organizationId, Guid userId, OrganizationRole role, CancellationToken cancellationToken)
+        public async Task UpdateRoleMemberAsync(Guid organizationId, Guid userId, OrganizationRoleType role, CancellationToken cancellationToken)
         {
             if (!await _permissionService.CanManageOrganization(organizationId, cancellationToken))
                 throw new UnauthorizedAccessException();

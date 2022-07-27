@@ -34,8 +34,8 @@ namespace LicenseManager.Api.Domain.Models
         /// </summary>
         public UserProfile()
         {
-            CreateMap<PagedResult<UserEntity>, PagedResult<User>>();
-            CreateMap<UserEntity, User>();
+            CreateMap<PagedResult<UserEntity>, PagedResult<UserDto>>();
+            CreateMap<UserEntity, UserDto>();
         }
     }
 }

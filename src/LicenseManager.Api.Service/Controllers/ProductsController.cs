@@ -20,7 +20,6 @@
 
 using AutoMapper;
 using LicenseManager.Api.Abstractions;
-using LicenseManager.Api.Data.Entities;
 using LicenseManager.Api.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,12 +57,12 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PagedResult<Abstractions.Product>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<ProductDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<PagedResult<Abstractions.Product>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<ProductDto>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
         {
             var entities = await _productService.ListAsync(request, cancellationToken);
-            return Ok(_mapper.Map<PagedResult<Abstractions.Product>>(entities));
+            return Ok(_mapper.Map<PagedResult<ProductDto>>(entities));
         }
 
         /// <summary>
@@ -73,14 +72,14 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProductDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<Abstractions.Product>> AddAsync(ProductRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductDto>> AddAsync(ProductRequest request, CancellationToken cancellationToken)
         {
             var entity = await _productService.AddAsync(request, cancellationToken);
-            var entityDto = _mapper.Map<Abstractions.Product>(entity);
+            var entityDto = _mapper.Map<ProductDto>(entity);
             return CreatedAtAction(
                 actionName: nameof(GetAsync),
                 routeValues: new { productId = entity.Id },
@@ -94,14 +93,14 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("import")]
-        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<Abstractions.Product>> ImportAsync(ProductBackup product, CancellationToken cancellationToken, bool checksumValidation = true)
+        public async Task<ActionResult<ProductDto>> ImportAsync(ProductBackupDto product, CancellationToken cancellationToken, bool checksumValidation = true)
         {
             var entity = await _productService.ImportAsync(product, checksumValidation, cancellationToken);
-            return Ok(_mapper.Map<Abstractions.Product>(entity));
+            return Ok(_mapper.Map<ProductDto>(entity));
         }
 
         /// <summary>
@@ -111,13 +110,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("{productId:guid}")]
-        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Abstractions.Product>> GetAsync(Guid productId, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductDto>> GetAsync(Guid productId, CancellationToken cancellationToken)
         {
             var entity = await _productService.GetAsync(productId, cancellationToken);
-            return Ok(_mapper.Map<Abstractions.Product>(entity));
+            return Ok(_mapper.Map<ProductDto>(entity));
         }
 
         /// <summary>
@@ -128,13 +127,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("{productId:guid}")]
-        [ProducesResponseType(typeof(Abstractions.Product), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Abstractions.Product>> UpdateAsync(Guid productId, ProductRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductDto>> UpdateAsync(Guid productId, ProductRequest request, CancellationToken cancellationToken)
         {
             var entity = await _productService.UpdateAsync(productId, request, cancellationToken);
-            return Ok(_mapper.Map<Abstractions.Product>(entity));
+            return Ok(_mapper.Map<ProductDto>(entity));
         }
 
         /// <summary>
@@ -144,10 +143,10 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("{productId:guid}/export")]
-        [ProducesResponseType(typeof(ProductBackup), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProductBackupDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProductBackup>> ExportAsync(Guid productId, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductBackupDto>> ExportAsync(Guid productId, CancellationToken cancellationToken)
             => Ok(await _productService.ExportAsync(productId, cancellationToken));
 
         /// <summary>

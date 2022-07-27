@@ -20,7 +20,6 @@
 
 using AutoMapper;
 using LicenseManager.Api.Abstractions;
-using LicenseManager.Api.Data.Entities;
 using LicenseManager.Api.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,13 +59,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PagedResult<Abstractions.License>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<LicenseDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PagedResult<Abstractions.License>>> ListAsync(Guid productId, [FromQuery] SieveModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<LicenseDto>>> ListAsync(Guid productId, [FromQuery] SieveModel request, CancellationToken cancellationToken)
         { 
             var entities = await _licenseService.ListAsync(productId, request, cancellationToken);
-            return Ok(_mapper.Map<PagedResult<Abstractions.License>>(entities));
+            return Ok(_mapper.Map<PagedResult<LicenseDto>>(entities));
         }
 
         /// <summary>
@@ -77,13 +76,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("{licenseId:guid}")]
-        [ProducesResponseType(typeof(ICollection<Abstractions.Product>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ICollection<LicenseDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Abstractions.License>> GetAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
+        public async Task<ActionResult<LicenseDto>> GetAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
         {
             var entity =await _licenseService.GetAsync(productId, licenseId, cancellationToken);
-            return Ok(_mapper.Map<Abstractions.License>(entity));
+            return Ok(_mapper.Map<LicenseDto>(entity));
         }
 
         /// <summary>
@@ -94,16 +93,16 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(Abstractions.License), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(LicenseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Abstractions.License>> AddAsync(Guid productId, LicenseRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<LicenseDto>> AddAsync(Guid productId, LicenseRequest request, CancellationToken cancellationToken)
         {
             var entity = await _licenseService.AddAsync(productId, request, cancellationToken);
             return CreatedAtAction(
                 actionName: nameof(GetAsync),
                 routeValues: new { productId = entity.ProductId, licenseId = entity.Id },
-                value: _mapper.Map<Abstractions.License>(entity));
+                value: _mapper.Map<LicenseDto>(entity));
         }
 
         /// <summary>
@@ -114,10 +113,10 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("import")]
-        [ProducesResponseType(typeof(Abstractions.License), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LicenseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ICollection<Abstractions.License>>> ImportAsync(Guid productId, LicenseBackup license, CancellationToken cancellationToken)
+        public async Task<ActionResult<LicenseDto>> ImportAsync(Guid productId, LicenseBackupDto license, CancellationToken cancellationToken)
             => Ok(await _licenseService.ImportAsync(productId, license, cancellationToken));
 
         /// <summary>
@@ -128,10 +127,10 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("{licenseId:guid}/export")]
-        [ProducesResponseType(typeof(LicenseBackup), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LicenseBackupDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<LicenseBackup>> ExportAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
+        public async Task<ActionResult<LicenseBackupDto>> ExportAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
             => Ok(await _licenseService.ExportAsync(productId, licenseId, cancellationToken));
 
         /// <summary>

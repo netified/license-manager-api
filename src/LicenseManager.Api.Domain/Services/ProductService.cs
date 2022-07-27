@@ -206,7 +206,7 @@ public class ProductService
     /// <param name="cancellationToken"></param>
     /// <exception cref="NotFoundException"></exception>
     /// <returns></returns>
-    public async Task<ProductBackup> ExportAsync(Guid productId, CancellationToken cancellationToken)
+    public async Task<ProductBackupDto> ExportAsync(Guid productId, CancellationToken cancellationToken)
     {
         if (!await _permissionService.CanManageProduct(productId, cancellationToken))
             throw new UnauthorizedAccessException();
@@ -215,7 +215,7 @@ public class ProductService
         var productEntity = await GetAsync(productId, cancellationToken);
 
         // Convert to backup object
-        var productBackup = _mapper.Map<ProductBackup>(productEntity);
+        var productBackup = _mapper.Map<ProductBackupDto>(productEntity);
 
         // Unprotect the public/private key pair
         var protector = _dataProtection.CreateProtector(DataProtectionConsts.DefaultPurpose);
@@ -240,7 +240,7 @@ public class ProductService
     /// <param name="cancellationToken"></param>
     /// <exception cref="ConflitException"></exception>
     /// <exception cref="BadRequestExecption"></exception>
-    public async Task<ProductEntity> ImportAsync(ProductBackup backup, bool checksumValidation, CancellationToken cancellationToken)
+    public async Task<ProductEntity> ImportAsync(ProductBackupDto backup, bool checksumValidation, CancellationToken cancellationToken)
     {
         if (!await _permissionService.CanManageOrganization(backup.OrganizationId, cancellationToken))
             throw new UnauthorizedAccessException();

@@ -60,12 +60,12 @@ namespace LicenseManager.Api.Service.Controllers
         /// <response code="401">Access to this resource requires authentication.</response>
         /// <returns>List of all organization objects.</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PagedResult<Organization>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<OrganizationDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<PagedResult<Organization>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<OrganizationDto>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
         {
             var entities = await _organizationService.ListAsync(request, cancellationToken);
-            return Ok(_mapper.Map<PagedResult<Organization>>(entities));
+            return Ok(_mapper.Map<PagedResult<OrganizationDto>>(entities));
         }
 
         /// <summary>
@@ -78,14 +78,14 @@ namespace LicenseManager.Api.Service.Controllers
         /// <response code="401">Access to this resource requires authentication.</response>
         /// <returns>Single organization object.</returns>
         [HttpPost]
-        [ProducesResponseType(typeof(Organization), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<Organization>> AddAsync(OrganizationRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<OrganizationDto>> AddAsync(OrganizationRequest request, CancellationToken cancellationToken)
         {
             var entity = await _organizationService.AddAsync(request, cancellationToken);
-            var entityDto = _mapper.Map<Organization>(entity);
+            var entityDto = _mapper.Map<OrganizationDto>(entity);
             return CreatedAtAction(
                 actionName: nameof(GetAsync),
                 routeValues: new { organizationId = entity.Id },
@@ -105,13 +105,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <response code="404">The organization object do not exists.</response>
         /// <returns>Single organization object.</returns>
         [HttpGet("{organizationId:guid}")]
-        [ProducesResponseType(typeof(Organization), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Organization>> GetAsync(Guid organizationId, CancellationToken cancellationToken)
+        public async Task<ActionResult<OrganizationDto>> GetAsync(Guid organizationId, CancellationToken cancellationToken)
         {
             var entity = await _organizationService.GetAsync(organizationId, cancellationToken);
-            return Ok(_mapper.Map<Organization>(entity));
+            return Ok(_mapper.Map<OrganizationDto>(entity));
         }
 
         /// <summary>
@@ -151,13 +151,13 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         [HttpGet("{organizationId:guid}/members")]
-        [ProducesResponseType(typeof(List<UserOrganization>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<UserOrganizationDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<List<UserOrganization>>> GetMemberAsync(Guid organizationId, CancellationToken cancellationToken)
+        public async Task<ActionResult<List<UserOrganizationDto>>> GetMemberAsync(Guid organizationId, CancellationToken cancellationToken)
         {
             var entities = await _organizationService.GetMemberAsync(organizationId, cancellationToken);
-            return Ok(_mapper.Map<List<UserOrganization>>(entities));
+            return Ok(_mapper.Map<List<UserOrganizationDto>>(entities));
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace LicenseManager.Api.Service.Controllers
         [HttpPut("{organizationId:guid}/members/{userId:guid}/role")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult> UpdateRoleMemberAsync(Guid organizationId, Guid userId, [Required] OrganizationRole role, CancellationToken cancellationToken)
+        public async Task<ActionResult> UpdateRoleMemberAsync(Guid organizationId, Guid userId, [Required] OrganizationRoleType role, CancellationToken cancellationToken)
         {
             await _organizationService.UpdateRoleMemberAsync(organizationId, userId, role, cancellationToken);
             return NoContent();

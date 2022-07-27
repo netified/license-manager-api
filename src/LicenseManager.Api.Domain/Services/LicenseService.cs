@@ -197,13 +197,13 @@ namespace LicenseManager.Api.Domain.Services
             return licenseBuild.CreateAndSignWithPrivateKey(privateKey, passPhrase);
         }
 
-        public async Task<LicenseBackup> ExportAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
+        public async Task<LicenseBackupDto> ExportAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
         {
             var licenseEntity = await GetAsync(productId, licenseId, cancellationToken);
-            return _mapper.Map<LicenseBackup>(licenseEntity);
+            return _mapper.Map<LicenseBackupDto>(licenseEntity);
         }
 
-        public async Task<LicenseEntity> ImportAsync(Guid productId, LicenseBackup backup, CancellationToken cancellationToken)
+        public async Task<LicenseEntity> ImportAsync(Guid productId, LicenseBackupDto backup, CancellationToken cancellationToken)
         {
             var licence = _mapper.Map<LicenseEntity>(backup);
             licence.ProductId = productId;

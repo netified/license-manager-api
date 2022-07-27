@@ -34,8 +34,8 @@ namespace LicenseManager.Api.Domain.Models
         /// </summary>
         public OrganizationProfile()
         {
-            CreateMap<PagedResult<OrganizationEntity>, PagedResult<Organization>>();
-            CreateMap<OrganizationEntity, Organization>()
+            CreateMap<PagedResult<OrganizationEntity>, PagedResult<OrganizationDto>>();
+            CreateMap<OrganizationEntity, OrganizationDto>()
                 .ForMember(dest => dest.MemberCount, o => o.MapFrom(src => src.UserOrganizations.Count));
         }
     }
