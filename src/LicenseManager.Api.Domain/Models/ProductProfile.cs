@@ -34,8 +34,9 @@ namespace LicenseManager.Api.Domain.Models
         /// </summary>
         public ProductProfile()
         {
-            CreateMap<PagedResult<ProductEntity>, PagedResult<Product>>();
-            CreateMap<ProductEntity, Product>();
+            CreateMap<PagedResult<ProductEntity>, PagedResult<Abstractions.Product>>();
+            CreateMap<ProductEntity, Abstractions.Product>()
+                .ForMember(dest => dest.LicenseCount, o => o.MapFrom(src => src.Licenses.Count));
         }
     }
 }

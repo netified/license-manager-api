@@ -40,8 +40,6 @@ namespace LicenseManager.Api.Domain.Models
             RuleFor(x => x.Email).EmailAddress();
             RuleFor(x => x.Email).Length(4, 64);
 
-            RuleFor(x => x.Company).Length(4, 64);
-
             RuleFor(x => x.Duration).NotNull();
             RuleFor(x => x.Duration).InclusiveBetween(1, 1460);
         }
