@@ -1,0 +1,20 @@
+version: '3.7'
+
+networks:
+  webgateway:
+    external: true
+
+services:
+  service:
+    image: "ghcr.io/netified/license-manager-api:${API_VERSION}"
+    networks:
+      webgateway: {}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TestingConfiguration__IsStaging=true
+    labels:
+      - ocelot.service=license-manager
+      - ocelot.scheme=http
+      - ocelot.port=80
+    restart: always
