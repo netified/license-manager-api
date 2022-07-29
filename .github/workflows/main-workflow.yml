@@ -31,3 +31,10 @@ jobs:
   build-docker:
     needs: [pack-solution]
     uses: './.github/workflows/build-image.yml'
+  update-server:
+    needs: [build-docker]
+    uses: './.github/workflows/update-server.yml'
+    if: github.event_name != 'release'
+    with:
+      environment: dev
+      imageVersion: 'develop'

@@ -8,7 +8,14 @@ on:
         required: true
         default: 'latest' 
         type: string
-
+      environment:
+        description: 'environment'     
+        required: true
+        default: 'dev' 
+        type: choice
+        options:
+         - dev
+         - prd
 jobs:
   build:
     runs-on: [self-hosted]
@@ -29,10 +36,10 @@ jobs:
         echo API_VERSION='${{ inputs.imageVersion }}' >> .env
         
     - name: Update associated images
-      run: "sudo /usr/local/bin/docker-compose -p netified_lm_api pull"
+      run: "sudo /usr/local/bin/docker-compose -f docker-compose.${{ inputs.environment }}.yml -p netified_lm_${{ inputs.environment }}_api pull"
 
     - name: Stop Containers
-      run: "sudo /usr/local/bin/docker-compose -p netified_lm_api stop"
+      run: "sudo /usr/local/bin/docker-compose -f docker-compose.${{ inputs.environment }}.yml -p netified_lm_${{ inputs.environment }}_api stop"
 
     - name: Start Containers
-      run: "sudo /usr/local/bin/docker-compose -p netified_lm_api up -d --build"
+      run: "sudo /usr/local/bin/docker-compose -f docker-compose.${{ inputs.environment }}.yml -p netified_lm_${{ inputs.environment }}_api up -d --build"

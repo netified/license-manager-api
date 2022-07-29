@@ -1,0 +1,42 @@
+version: '3.7'
+
+networks:
+  webgateway:
+    external: true
+
+services:
+  service:
+    image: "ghcr.io/netified/license-manager-api:${API_VERSION}"
+    networks:
+      webgateway: {}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - ConnectionStrings__DataStoreDbContext=Username=Host=database;Username=${LM_DB_USERNAME};Port=5432;Password=${LM_DB_PASSWORD};Database=license-manager;Pooling=true;
+      - ConnectionStrings__DataProtectionDbContext=Username=Host=database;Username=${LM_DB_USERNAME};Port=5432;Password=${LM_DB_PASSWORD};Database=license-manager;Pooling=true;
+      - DatabaseProviderConfiguration__ProviderType=PostgreSQL
+    depends_on:
+      database:
+        condition: service_healthy
+    labels:
+      - ocelot.service=prd-license-manager
+      - ocelot.scheme=http
+      - ocelot.port=80
+    restart: always
+
+  database:
+    build: docker/database
+    environment:
+      POSTGRES_DB: license-manager
+      POSTGRES_USER: ${LM_DB_USERNAME}
+      POSTGRES_PASSWORD: ${LM_DB_PASSWORD}
+    volumes:
+       - /docker/data/netified/license-manager/db:/var/lib/postgresql/data
+    networks:
+      default: {}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d keycloak -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always

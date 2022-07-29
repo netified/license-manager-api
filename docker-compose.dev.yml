@@ -13,8 +13,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TestingConfiguration__IsStaging=true
+    depends_on:
+      database:
+        condition: service_healthy
     labels:
-      - ocelot.service=license-manager
+      - ocelot.service=dev-license-manager
       - ocelot.scheme=http
       - ocelot.port=80
     restart: always
