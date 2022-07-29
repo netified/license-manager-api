@@ -1,6 +1,16 @@
 name: Update Server
 
 on:
+  workflow_call:
+    inputs:
+      imageVersion:
+        description: 'Image version'     
+        required: true
+        type: string
+      environment:
+        description: 'Environment'     
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       imageVersion:
@@ -9,7 +19,7 @@ on:
         default: 'latest' 
         type: string
       environment:
-        description: 'environment'     
+        description: 'Environment'     
         required: true
         default: 'dev' 
         type: choice
