@@ -12,6 +12,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - TestingConfiguration__IsStaging=true
     labels:
       - ocelot.service=dev-license-manager
