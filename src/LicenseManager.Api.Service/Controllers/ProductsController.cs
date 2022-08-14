@@ -114,6 +114,24 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
+        /// 🧊 List of product's user permissions.
+        /// </summary>
+        /// <remarks>
+        /// List of product members. \
+        /// Only the product's users will be able to use this API.
+        /// </remarks>
+        /// <param name="productId">The product identifier.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [Authorize(Policy = "ProductReader")]
+        [HttpGet("products/{productId:guid}/permissions")]
+        [ProducesResponseType(typeof(List<PermissionDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<PermissionDto>>> ListPermissionAsync(Guid productId, CancellationToken stoppingToken = default)
+        {
+            var entities = await _productService.ListPermissionAsync(productId, stoppingToken);
+            return Ok(_mapper.Map<List<PermissionDto>>(entities));
+        }
+
+        /// <summary>
         /// 🧊 Getting a product.
         /// </summary>
         /// <remarks>

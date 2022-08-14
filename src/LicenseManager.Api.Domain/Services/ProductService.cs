@@ -26,18 +26,13 @@ using LicenseManager.Api.Data.Shared.DbContexts;
 using LicenseManager.Api.Domain.Exceptions;
 using LicenseManager.Api.Domain.Extensions;
 using LicenseManager.Security.Cryptography;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sieve.Models;
 using Sieve.Services;
-using System;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LicenseManager.Api.Domain.Services;
 
@@ -93,7 +88,6 @@ public class ProductService
     /// <returns></returns>
     public async Task<ProductEntity> AddAsync(Guid tenantId, ProductRequest request, CancellationToken stoppingToken)
     {
-
         // Detect if the request conflicts with the data store
         var detectConflit = await _dataStore.Set<ProductEntity>()
             .AnyAsync(x => x.Name == request.Name && x.TenantId == tenantId, stoppingToken);
@@ -124,6 +118,25 @@ public class ProductService
             cancellationToken: stoppingToken);
 
         return product;
+    }
+
+    /// <summary>
+    /// Obtains product permissions
+    /// </summary>
+    /// <param name="productId">The product identifier.</param>
+    /// <param name="stoppingToken">The stopping token.</param>
+    /// <returns></returns>
+    public async Task<List<PermissionEntity>> ListPermissionAsync(Guid productId, CancellationToken stoppingToken)
+    {
+        var tenantId = await _dataStore.Set<ProductEntity>()
+            .AsNoTracking().Where(x => x.Id == productId)
+            .Select(x => x.TenantId).FirstOrDefaultAsync(stoppingToken);
+
+        return await _dataStore.Set<PermissionEntity>()
+            .AsNoTracking()
+            .Include(x => x.User)
+            .Where(x => (x.TenantId == tenantId && x.ProductId == null) || (x.TenantId == tenantId && x.ProductId == productId))
+            .ToListAsync(stoppingToken);
     }
 
     public Task<object> UpdateAsync(Guid productId, ProductRequest request, CancellationToken cancellationToken)
@@ -226,7 +239,6 @@ public class ProductService
         var checksum = agregate.ToString().ComputeMd5Hash();
         if (backup.Checksum != checksum)
             throw new BadRequestExecption("Invalid checksum");
-        
 
         // Detect if the request conflicts with the data store
         var detectNameConflit = await _dataStore.Set<ProductEntity>().AnyAsync(x => x.Name == backup.Name, cancellationToken);
