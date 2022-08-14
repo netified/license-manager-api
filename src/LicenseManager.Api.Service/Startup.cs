@@ -87,9 +87,7 @@ namespace LicenseManager.Api.Service
             // Add internal services
             services.AddTransient<ProductService>();
             services.AddTransient<LicenseService>();
-            services.AddTransient<IdentityService>();
-            services.AddTransient<PermissionService>();
-            services.AddTransient<OrganizationService>();
+            services.AddTransient<TenantService>();
             services.AddTransient<UserService>();
         }
 

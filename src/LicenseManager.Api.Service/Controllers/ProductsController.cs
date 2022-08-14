@@ -23,7 +23,6 @@ using LicenseManager.Api.Abstractions;
 using LicenseManager.Api.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sieve.Models;
 
 namespace LicenseManager.Api.Service.Controllers
 {
@@ -33,7 +32,7 @@ namespace LicenseManager.Api.Service.Controllers
     [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products")]
+    [Route("v{version:apiVersion}")]
     public class ProductsController : ControllerBase
     {
         private readonly ProductService _productService;
@@ -51,34 +50,42 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// Get all products.
+        /// 🧊 List all the tenant products.
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpGet]
+        /// <remarks>
+        /// This endpoint allows you to sort, filter and add paging features to retrieve data the way you want it. \
+        /// Please read the official documentation for more information about the filtering function.
+        /// </remarks>
+        /// <param name="tenantId">The tenant identifier.</param>
+        /// <param name="filters">The filters.</param>
+        /// <param name="sorts">The sorts.</param>
+        /// <param name="page">The page number.</param>
+        /// <param name="pageSize">Size of the page.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [HttpGet("tenants/{tenantId}/products")]
+        [Authorize(Policy = "TenantReader")]
         [ProducesResponseType(typeof(PagedResult<ProductDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<PagedResult<ProductDto>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<ProductDto>>> ListAsync(Guid tenantId, string? filters, string? sorts, int? page = 1, int? pageSize = 100, CancellationToken stoppingToken = default)
         {
-            var entities = await _productService.ListAsync(request, cancellationToken);
+            var entities = await _productService.ListAsync(tenantId, filters, sorts, page, pageSize, stoppingToken);
             return Ok(_mapper.Map<PagedResult<ProductDto>>(entities));
         }
 
         /// <summary>
-        /// Add a new product.
+        /// 🧊 Add a product to the tenant.
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost]
+        /// <remarks>
+        /// Only owner of the tenant or the product will be able to use this API.
+        /// </remarks>
+        /// <param name="tenantId">The tenant identifier.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [HttpPost("tenants/{tenantId}/products")]
+        [Authorize(Policy = "TenantManager")]
         [ProducesResponseType(typeof(ProductDto), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<ProductDto>> AddAsync(ProductRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductDto>> AddAsync(Guid tenantId, ProductRequest request, CancellationToken stoppingToken = default)
         {
-            var entity = await _productService.AddAsync(request, cancellationToken);
+            var entity = await _productService.AddAsync(tenantId, request, stoppingToken);
             var entityDto = _mapper.Map<ProductDto>(entity);
             return CreatedAtAction(
                 actionName: nameof(GetAsync),
@@ -87,81 +94,91 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// Import a product with form data.
+        /// 🧊 Import a product into the tenant.
         /// </summary>
-        /// <param name="product"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost("import")]
+        /// <remarks>
+        /// Only owner of the tenant or the product will be able to use this API. \
+        /// ***( Prenium Feature )***
+        /// </remarks>
+        /// <param name="tenantId">The tenant identifier.</param>
+        /// <param name="product">The product configuration.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [HttpPost("tenants/{tenantId}/products/import")]
+        [Authorize(Policy = "Prenium")]
+        [Authorize(Policy = "TenantManager")]
         [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<ProductDto>> ImportAsync(ProductBackupDto product, CancellationToken cancellationToken, bool checksumValidation = true)
+        public async Task<ActionResult<ProductDto>> ImportAsync(Guid tenantId, ProductBackupDto product, CancellationToken stoppingToken = default)
         {
-            var entity = await _productService.ImportAsync(product, checksumValidation, cancellationToken);
+            var entity = await _productService.ImportAsync(tenantId, product, stoppingToken);
             return Ok(_mapper.Map<ProductDto>(entity));
         }
 
         /// <summary>
-        /// Get product by identifier.
+        /// 🧊 Getting a product.
         /// </summary>
-        /// <param name="productId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpGet("{productId:guid}")]
+        /// <remarks>
+        /// Only users of the tenant or the product will be able to use this API.
+        /// </remarks>
+        /// <param name="productId">The product identifier.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [HttpGet("products/{productId:guid}")]
+        [Authorize(Policy = "ProductReader")]
         [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProductDto>> GetAsync(Guid productId, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductDto>> GetAsync(Guid productId, CancellationToken stoppingToken = default)
         {
-            var entity = await _productService.GetAsync(productId, cancellationToken);
+            var entity = await _productService.GetAsync(productId, stoppingToken);
             return Ok(_mapper.Map<ProductDto>(entity));
         }
 
         /// <summary>
-        /// Update product by identifier.
+        /// 🧊 Update the product configuration.
         /// </summary>
-        /// <param name="productId"></param>
-        /// <param name="request"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPut("{productId:guid}")]
+        /// <remarks>
+        /// Only users with owner-level permissions will be able to use this API.
+        /// </remarks>
+        /// <param name="productId">The product identifier.</param>
+        /// <param name="request">The product request.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [Authorize(Policy = "ProductManager")]
+        [HttpPut("products/{productId:guid}")]
         [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProductDto>> UpdateAsync(Guid productId, ProductRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductDto>> UpdateAsync(Guid productId, ProductRequest request, CancellationToken stoppingToken = default)
         {
-            var entity = await _productService.UpdateAsync(productId, request, cancellationToken);
+            var entity = await _productService.UpdateAsync(productId, request, stoppingToken);
             return Ok(_mapper.Map<ProductDto>(entity));
         }
 
         /// <summary>
-        /// Export a product by identifier.
+        /// 🧊 Export a product.
         /// </summary>
-        /// <param name="productId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost("{productId:guid}/export")]
+        /// <remarks>
+        /// Only users with owner-level permissions will be able to use this API. \
+        /// ***( Prenium Feature )***
+        /// </remarks>
+        /// <param name="productId">The product identifier.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [Authorize(Policy = "Prenium")]
+        [Authorize(Policy = "ProductManager")]
+        [HttpPost("products/{productId:guid}/export")]
         [ProducesResponseType(typeof(ProductBackupDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProductBackupDto>> ExportAsync(Guid productId, CancellationToken cancellationToken)
-            => Ok(await _productService.ExportAsync(productId, cancellationToken));
+        public async Task<ActionResult<ProductBackupDto>> ExportAsync(Guid productId, CancellationToken stoppingToken = default)
+            => Ok(await _productService.ExportAsync(productId, stoppingToken));
 
         /// <summary>
-        /// Delete a product by identifier.
+        /// 🧊 Delete a product.
         /// </summary>
-        /// <param name="productId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpDelete("{productId:guid}")]
+        /// <remarks>
+        /// Permanently delete the product. \
+        /// Only users with owner-level permissions will be able to use this API.
+        /// </remarks>
+        /// <param name="productId">The product identifier.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
+        [Authorize(Policy = "ProductManager")]
+        [HttpDelete("products/{productId:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> DeleteAsync(Guid productId, CancellationToken cancellationToken)
+        public async Task<ActionResult> DeleteAsync(Guid productId, CancellationToken stoppingToken = default)
         {
-            await _productService.RemoveAsync(productId, cancellationToken);
+            await _productService.RemoveAsync(productId, stoppingToken);
             return NoContent();
         }
     }

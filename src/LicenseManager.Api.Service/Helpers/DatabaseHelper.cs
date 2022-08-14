@@ -108,6 +108,11 @@ namespace LicenseManager.Api.Service.Helpers
             }
         }
 
+        /// <summary>
+        /// Gets the migration assembly by provider.
+        /// </summary>
+        /// <param name="databaseProvider">The database provider.</param>
+        /// <returns></returns>
         private static string GetMigrationAssemblyByProvider(DatabaseProviderConfiguration databaseProvider)
         {
             return databaseProvider.ProviderType switch

@@ -23,7 +23,6 @@ using LicenseManager.Api.Abstractions;
 using LicenseManager.Api.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sieve.Models;
 
 namespace LicenseManager.Api.Service.Controllers
 {
@@ -36,14 +35,7 @@ namespace LicenseManager.Api.Service.Controllers
     [Route("v{version:apiVersion}/users")]
     public class UsersController : ControllerBase
     {
-        /// <summary>
-        /// The user service
-        /// </summary>
         private readonly UserService _userService;
-
-        /// <summary>
-        /// The mapper service
-        /// </summary>
         private readonly IMapper _mapper;
 
         /// <summary>
@@ -58,62 +50,57 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// List application users.
+        /// 🧊 List all users.
         /// </summary>
         /// <remarks>
-        /// Returns a list of all users for this application.
+        /// Returns a list of all users for this application. \
+        /// This endpoint allows you to sort, filter and add paging features to retrieve data the way you want it. \
+        /// Please read the official documentation for more information about the filtering function.
         /// </remarks>
-        /// <param name="request">The filter request</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <response code="200">Returns a list of all user objects</response>
-        /// <response code="401">Access to this resource requires authentication</response>
-        /// <returns>List of all user objects</returns>
+        /// <param name="filters">The filters.</param>
+        /// <param name="sorts">The sorts.</param>
+        /// <param name="page">The page number.</param>
+        /// <param name="pageSize">Size of the page.</param>
+        /// <param name="stoppingToken">The cancellation token.</param>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<UserDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<PagedResult<UserDto>>> ListAsync([FromQuery] SieveModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<UserDto>>> ListAsync(string? filters, string? sorts, int? page = 1, int? pageSize = 100, CancellationToken stoppingToken = default)
         {
-            var entities = await _userService.ListAsync(request, cancellationToken);
+            var entities = await _userService.ListAsync(filters, sorts, page, pageSize, stoppingToken);
             return Ok(_mapper.Map<PagedResult<UserDto>>(entities));
         }
 
         /// <summary>
-        /// Get current user.
+        /// 🧊 Get the current user.
         /// </summary>
         /// <remarks>
-        /// Retrieves information about the user who is currently authenticated.
-        /// In the case of a client-side authenticated OAuth 2.0 application this will be the user who authorized the app.
+        /// Retrieves information about the user who is currently authenticated. \
+        /// In the case of a client-side authenticated OAuth 2.0 application, this will be the user who authorized the application.
         /// </remarks>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <response code="200">Returns a single user object</response>
-        /// <response code="401">Access to this resource requires authentication</response>
-        /// <returns>Single user object</returns>
+        /// <param name="stoppingToken">The cancellation token.</param>
         [HttpGet("me")]
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<UserDto>> GetCurrentAsync(CancellationToken cancellationToken)
+        public async Task<ActionResult<UserDto>> GetCurrentAsync(CancellationToken stoppingToken)
         {
-            var entity = await _userService.GetCurrentAsync(cancellationToken);
+            var entity = await _userService.GetCurrentAsync(stoppingToken);
             return Ok(_mapper.Map<UserDto>(entity));
         }
 
         /// <summary>
-        /// Update current user default organization.
+        /// 🧊 Update the default organization of the current user.
         /// </summary>
         /// <remarks>
         /// The default organization is used for the administration website.
         /// </remarks>
         /// <param name="organizationId">The organization identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <response code="204">A blank response is returned if the user was successfully updated.</response>
-        /// <response code="401">Access to this resource requires authentication</response>
-        /// <returns>Nothing</returns>
+        /// <param name="stoppingToken">The cancellation token.</param>
         [HttpPut("me/organizations/{organizationId:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> SetOrganizationAsync(Guid organizationId, CancellationToken cancellationToken)
+        public async Task<ActionResult> SetOrganizationAsync(Guid organizationId, CancellationToken stoppingToken)
         {
-            await _userService.SetDefaultOrganizationAsync(organizationId, cancellationToken);
+            await _userService.SetDefaultOrganizationAsync(organizationId, stoppingToken);
             return NoContent();
         }
     }

@@ -25,9 +25,12 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace LicenseManager.Api.Service.Helpers
+namespace LicenseManager.Api.Service.Extensions
 {
-    public static class DataProtectionHelper
+    /// <summary>
+    /// Data Protection Service Extensions
+    /// </summary>
+    public static class DataProtectionExtensions
     {
         /// <summary>
         /// Adds the data protection.

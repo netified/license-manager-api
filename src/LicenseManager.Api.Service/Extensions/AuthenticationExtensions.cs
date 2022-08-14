@@ -19,7 +19,9 @@
 // IN THE SOFTWARE.
 
 using LicenseManager.Api.Configuration;
+using LicenseManager.Api.Service.Extensions.Authorizations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Logging;
 
 namespace LicenseManager.Api.Service.Extensions
@@ -48,7 +50,93 @@ namespace LicenseManager.Api.Service.Extensions
                 options.RequireHttpsMetadata = authConfiguration.RequireHttpsMetadata;
                 options.Audience = authConfiguration.Audience;
             });
-            services.AddAuthorization();
+
+            services.AddTransient<AuthorizationService>();
+            services.AddTransient<IAuthorizationHandler, TenantReaderHandler>();
+            services.AddTransient<IAuthorizationHandler, TenantManagerHandler>();
+            services.AddTransient<IAuthorizationHandler, ProductReaderHandler>();
+            services.AddTransient<IAuthorizationHandler, ProductManagerHandler>();
+            services.AddTransient<IAuthorizationHandler, LicenseReaderHandler>();
+            services.AddTransient<IAuthorizationHandler, LicenseManagerHandler>();
+            services.AddTransient<IAuthorizationHandler, MemberHandler>();
+            services.AddTransient<IAuthorizationHandler, PreniumHandler>();
+
+            services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = ConfigureDefaults(new AuthorizationPolicyBuilder()).Build();
+                options.AddPolicy("TenantReader", TenantReaderPolicy);
+                options.AddPolicy("TenantManager", TenantManagerPolicy);
+                options.AddPolicy("ProductReader", ProductReaderPolicy);
+                options.AddPolicy("ProductManager", ProductManagerPolicy);
+                options.AddPolicy("LicenseReader", LicenseReaderPolicy);
+                options.AddPolicy("LicenseManager", LicenseManagerPolicy);
+                options.AddPolicy("Prenium", PreniumPolicy);
+            });
         }
+
+        /// <summary>
+        /// Gets the tenant acces policy.
+        /// </summary>
+        public static AuthorizationPolicy TenantReaderPolicy =>
+            ConfigureDefaults(new AuthorizationPolicyBuilder())
+            .AddRequirements(new TenantReaderRequirement())
+            .Build();
+
+        /// <summary>
+        /// Gets the tenant manage policy.
+        /// </summary>
+        public static AuthorizationPolicy TenantManagerPolicy =>
+            ConfigureDefaults(new AuthorizationPolicyBuilder())
+            .AddRequirements(new TenantManagerRequirement())
+            .Build();
+
+        /// <summary>
+        /// Gets the product acces policy.
+        /// </summary>
+        public static AuthorizationPolicy ProductReaderPolicy =>
+            ConfigureDefaults(new AuthorizationPolicyBuilder())
+            .AddRequirements(new ProductReaderRequirement())
+            .Build();
+
+        /// <summary>
+        /// Gets the product manage policy.
+        /// </summary>
+        public static AuthorizationPolicy ProductManagerPolicy =>
+            ConfigureDefaults(new AuthorizationPolicyBuilder())
+            .AddRequirements(new ProductManagerRequirement())
+            .Build();
+
+        /// <summary>
+        /// Gets the license acces policy.
+        /// </summary>
+        public static AuthorizationPolicy LicenseReaderPolicy =>
+            ConfigureDefaults(new AuthorizationPolicyBuilder())
+            .AddRequirements(new LicenseReaderRequirement())
+            .Build();
+
+        /// <summary>
+        /// Gets the license manage policy.
+        /// </summary>
+        public static AuthorizationPolicy LicenseManagerPolicy =>
+            ConfigureDefaults(new AuthorizationPolicyBuilder())
+            .AddRequirements(new LicenseManagerRequirement())
+            .Build();
+
+        /// <summary>
+        /// Gets the prenium policy.
+        /// </summary>
+        public static AuthorizationPolicy PreniumPolicy =>
+            ConfigureDefaults(new AuthorizationPolicyBuilder())
+            .AddRequirements(new PreniumRequirement())
+            .Build();
+
+        /// <summary>
+        /// Configures the defaults policy.
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        private static AuthorizationPolicyBuilder ConfigureDefaults(AuthorizationPolicyBuilder builder)
+            => builder.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser()
+            .AddRequirements(new MemberRequirement());
     }
 }
