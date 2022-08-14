@@ -61,6 +61,11 @@ namespace LicenseManager.Api.Configuration
         public IdentityConfiguration Identity { get; set; } = new IdentityConfiguration();
 
         /// <summary>
+        /// The instance configuration.
+        /// </summary>
+        public InstanceConfiguration Instance { get; set; } = new InstanceConfiguration();
+
+        /// <summary>
         /// Applies configuration parsed from an appsettings file into these options.
         /// </summary>
         /// <param name="configuration">The configuration to bind into this instance.</param>
@@ -73,6 +78,7 @@ namespace LicenseManager.Api.Configuration
             configuration.GetSection(nameof(DatabaseProtectionConfiguration)).Bind(DataProtection);
             configuration.GetSection(nameof(AzureKeyVaultConfiguration)).Bind(AzureKeyVault);
             configuration.GetSection(nameof(IdentityConfiguration)).Bind(Identity);
+            configuration.GetSection(nameof(InstanceConfiguration)).Bind(Instance);
         }
     }
 }
