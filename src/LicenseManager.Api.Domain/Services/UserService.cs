@@ -18,234 +18,300 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-
 using LicenseManager.Api.Abstractions;
 using LicenseManager.Api.Configuration;
 using LicenseManager.Api.Data.Entities;
 using LicenseManager.Api.Data.Shared.DbContexts;
-using LicenseManager.Api.Domain.Exceptions;
 using LicenseManager.Api.Domain.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Sieve.Models;
 using Sieve.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LicenseManager.Api.Domain.Services;
 
 public class UserService
 {
-    #region Service
-
     private readonly IHttpContextAccessor _contextAccessor;
-    private readonly ApplicationConfiguration _applicationConfiguration;
+    private readonly AppConfiguration _appConfiguration;
     private readonly DataStoreDbContext _dataStore;
     private readonly ISieveProcessor _sieveProcessor;
     private readonly ILogger<UserService> _logger;
-    private readonly IDistributedCache _cache;
 
-    public UserService(IHttpContextAccessor contextAccessor, ApplicationConfiguration applicationConfiguration, DataStoreDbContext dataStore, ISieveProcessor sieveProcessor, ILogger<UserService> logger, IDistributedCache cache)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserService"/> class.
+    /// </summary>
+    /// <param name="contextAccessor">The context accessor.</param>
+    /// <param name="applicationConfiguration">The application configuration.</param>
+    /// <param name="dataStore">The data store.</param>
+    /// <param name="sieveProcessor">The sieve processor.</param>
+    /// <param name="logger">The logger.</param>
+    public UserService(
+        IHttpContextAccessor contextAccessor,
+        AppConfiguration applicationConfiguration,
+        DataStoreDbContext dataStore,
+        ISieveProcessor sieveProcessor,
+        ILogger<UserService> logger)
     {
         _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
-        _applicationConfiguration = applicationConfiguration ?? throw new ArgumentNullException(nameof(applicationConfiguration));
+        _appConfiguration = applicationConfiguration ?? throw new ArgumentNullException(nameof(applicationConfiguration));
         _dataStore = dataStore ?? throw new ArgumentNullException(nameof(dataStore));
         _sieveProcessor = sieveProcessor ?? throw new ArgumentNullException(nameof(sieveProcessor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
-
-    #endregion Service
 
     #region User Management
 
     /// <summary>
-    /// Retrieve the users from the data store using the pagination functionality.
+    /// Retrieve users from the data store using the paging feature.
     /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<PagedResult<UserEntity>> ListAsync(SieveModel request, CancellationToken cancellationToken)
+    /// <param name="filters">The filters.</param>
+    /// <param name="sorts">The sorts.</param>
+    /// <param name="page">The page number.</param>
+    /// <param name="pageSize">Size of the page.</param>
+    /// <param name="stoppingToken">The cancellation token.</param>
+    public async Task<PagedResult<UserEntity>> ListAsync(string? filters, string? sorts, int? page, int? pageSize, CancellationToken stoppingToken = default)
     {
-        var query = _dataStore.Set<UserEntity>()
-            .AsNoTracking().AsQueryable();
-        return await _sieveProcessor.GetPagedAsync(query, request, cancellationToken);
+        var request = new SieveModel() { Filters = filters, Sorts = sorts, Page = page, PageSize = pageSize };
+        var query = _dataStore.Set<UserEntity>().AsNoTracking();
+        return await _sieveProcessor.GetPagedAsync(query, request, stoppingToken);
     }
 
     /// <summary>
-    /// Register current user to the product.
+    /// Retrieves the current user.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    public async Task<Guid> RegisterAsync(CancellationToken cancellationToken)
+    /// <param name="stoppingToken">The cancellation token.</param>
+    public async Task<UserEntity> GetAsync(CancellationToken stoppingToken = default)
     {
-        // Create new user in data store
-        UserEntity userIdentity;
-        try
-        {
-            userIdentity = new UserEntity()
-            {
-                RemoteId = _contextAccessor.GetHttpIdentifier(_applicationConfiguration.Identity),
-                DisplayName = _contextAccessor.GetHttpDisplayName(_applicationConfiguration.Identity),
-                UserName = _contextAccessor.GetHttpUserName(_applicationConfiguration.Identity),
-                Email = _contextAccessor.GetHttpEmail(_applicationConfiguration.Identity)
-            };
-            await _dataStore.Set<UserEntity>().AddAsync(userIdentity, cancellationToken);
-            await _dataStore.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Unable to create user entity", ex);
-            throw new Exception("Unable to create user entity");
-        }
-
-        // Create self organization in data store
-        OrganizationEntity organizationEntity;
-        try
-        {
-            organizationEntity = new OrganizationEntity()
-            {
-                Name = $"Personal#{userIdentity.Id}",
-                Type = OrganizationType.Personal,
-                Description = "Personal organization",
-                UserOrganizations = new List<UserOrganizationEntity>()
-            {
-                new UserOrganizationEntity()
-                {
-                    UserId = userIdentity.Id,
-                    Role = OrganizationRoleType.Owner
-                }
-            }
-            };
-            await _dataStore.Set<OrganizationEntity>().AddAsync(organizationEntity, cancellationToken);
-            await _dataStore.SaveChangesAsync(userIdentity.Id, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            // Delete the previously created account
-            _dataStore.Set<UserEntity>().Remove(userIdentity);
-            await _dataStore.SaveChangesAsync(cancellationToken);
-
-            _logger.LogError("Unable to create self user organization", ex);
-            throw new Exception("Unable to create self user organization");
-        }
-
-        // Set default organization
-        userIdentity.DefaultOrganization = organizationEntity.Id;
-        _dataStore.Set<UserEntity>().Update(userIdentity);
-        await _dataStore.SaveChangesAsync(cancellationToken);
-
-        return userIdentity.Id;
-    }
-
-    /// <summary>
-    /// Gets the effective user identifier.
-    /// </summary>
-    /// <returns>The effective user identifier</returns>
-    public async Task<Guid> GetIdentifierAsync(CancellationToken cancellationToken)
-    {
-        var remoteIdentifier = _contextAccessor.GetHttpIdentifier(_applicationConfiguration.Identity);
-        var cacheKey = $"user-{remoteIdentifier}";
-        var cacheValue = await _cache.GetAsync(cacheKey, cancellationToken);
-        if (cacheValue == null)
-        {
-            var identifier = await GetSystemUserAsync(remoteIdentifier, cancellationToken);
-            var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
-            await _cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes(identifier.ToString()), options, cancellationToken);
-            return identifier;
-        }
-        else
-        {
-            // Convert and return user identifier
-            var stringIdentifier = Encoding.UTF8.GetString(cacheValue);
-            return Guid.Parse(stringIdentifier);
-        }
-    }
-
-    /// <summary>
-    /// Gets the system user identifier from the data store.
-    /// </summary>
-    /// <param name="remoteIdentifier">The remote identifier.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    private async Task<Guid> GetSystemUserAsync(string remoteIdentifier, CancellationToken cancellationToken)
-    {
-        var userIdentifier = await _dataStore.Set<UserEntity>()
+        var remoteIdentifier = GetRemoteIdentifier();
+        var userEntity = await _dataStore.Set<UserEntity>()
             .AsNoTracking()
             .Where(x => x.RemoteId == remoteIdentifier)
-            .Select(x => x.Id)
-            .FirstOrDefaultAsync(cancellationToken);
-        if (userIdentifier != Guid.Empty)
-            return userIdentifier;
-        return await RegisterAsync(cancellationToken);
+            .FirstOrDefaultAsync(stoppingToken);
+        if (userEntity == default)
+            userEntity = await RegisterAsync(stoppingToken);
+        return userEntity;
     }
 
-    public async Task<UserEntity> GetCurrentAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets the current user's identifier.
+    /// </summary>
+    /// <param name="stoppingToken">The cancellation token.</param>
+    public async Task<Guid> GetIdentifierAsync(CancellationToken stoppingToken = default)
     {
-        var userId = await GetIdentifierAsync(cancellationToken);
-        var entity = await _dataStore.Set<UserEntity>()
-            .AsNoTracking()
-            .Include(x => x.License)
-            .Where(x => x.Id == userId)
-            .FirstAsync(cancellationToken);
-        return entity;
+        var userEntity = await GetAsync(stoppingToken);
+        return userEntity.Id;
     }
 
-    public async Task SetDefaultOrganizationAsync(Guid organizationId, CancellationToken cancellationToken)
+    /// <summary>
+    /// Register the current user to this application.
+    /// </summary>
+    /// <param name="stoppingToken">The cancellation token.</param>
+    public async Task<UserEntity> RegisterAsync(CancellationToken stoppingToken = default)
     {
-        var userId = await GetIdentifierAsync(cancellationToken);
+        if (GetRemoteUserName().StartsWith("service-account"))
+            return await RegisterServiceAccountAsync(stoppingToken);
+        return await RegisterAccountAsync(stoppingToken);
+    }
+
+    /// <summary>
+    /// Registers the service account.
+    /// The service account contains minimal information to use this product.
+    /// </summary>
+    /// <param name="stoppingToken">The cancellation token.</param>
+    private async Task<UserEntity> RegisterServiceAccountAsync(CancellationToken stoppingToken = default)
+    {
+        var userEntity = new UserEntity()
+        {
+            RemoteId = GetRemoteIdentifier(),
+            DisplayName = "Service Account",
+            UserName = GetRemoteUserName(),
+            Email = $"{GetRemoteUserName()}@netified.io".ToLower(),
+            Prenium = _appConfiguration.Instance.Type == InstanceType.OnPremises
+        };
+
+        _dataStore.Set<UserEntity>().Add(userEntity);
+        await _dataStore.SaveChangesAsync(stoppingToken);
+        return userEntity;
+    }
+
+    /// <summary>
+    /// Registers the standard account.
+    /// </summary>
+    /// <param name="stoppingToken">The cancellation token.</param>
+    private async Task<UserEntity> RegisterAccountAsync(CancellationToken stoppingToken = default)
+    {
+        var userEntity = new UserEntity()
+        {
+            RemoteId = GetRemoteIdentifier(),
+            DisplayName = GetRemoteDisplayName(),
+            UserName = GetRemoteUserName(),
+            Email = GetRemoteEmail(),
+            Prenium = _appConfiguration.Instance.Type == InstanceType.OnPremises
+        };
+
+        _dataStore.Set<UserEntity>().Add(userEntity);
+        await _dataStore.SaveChangesAsync(stoppingToken);
+        await InitializeTenantAsync(userEntity, stoppingToken);
+
+        return userEntity;
+    }
+
+    /// <summary>
+    /// Initializes the user's default tenant.
+    /// </summary>
+    /// <param name="userEntity">The user entity.</param>
+    /// <param name="stoppingToken">The cancellation token.</param>
+    private async Task InitializeTenantAsync(UserEntity userEntity, CancellationToken stoppingToken = default)
+    {
+        // Create default tenant
+        var tenantEntity = new TenantEntity()
+        {
+            Name = "Personal",
+            Type = TenantType.Personal,
+            Description = "Personal organization",
+        };
+        _dataStore.Set<TenantEntity>().Add(tenantEntity);
+        await _dataStore.SaveChangesAsync(
+            userId: userEntity.Id,
+            cancellationToken: stoppingToken);
+
+        // Add tenant permission
+        var permissionEntity = new PermissionEntity()
+        {
+            UserId = userEntity.Id,
+            TenantId = tenantEntity.Id,
+            Role = UserRoleType.Owner
+        };
+        _dataStore.Set<PermissionEntity>().Add(permissionEntity);
+        await _dataStore.SaveChangesAsync(
+            userId: userEntity.Id,
+            cancellationToken: stoppingToken);
+
+        // Set default organization
+        userEntity.DefaultTenant = tenantEntity.Id;
+        _dataStore.Set<UserEntity>().Update(userEntity);
+        await _dataStore.SaveChangesAsync(
+            userId: userEntity.Id,
+            cancellationToken: stoppingToken);
+    }
+
+    /// <summary>
+    /// Sets the default tenant asynchronous.
+    /// </summary>
+    /// <param name="tenantId">The tenant identifier.</param>
+    /// <param name="stoppingToken">The cancellation token.</param>
+    public async Task SetDefaultTenantAsync(Guid tenantId, CancellationToken stoppingToken)
+    {
+        var userId = await GetIdentifierAsync(stoppingToken);
         var entity = await _dataStore.Set<UserEntity>()
-            .Include(x => x.UserOrganizations)
             .Where(x => x.Id == userId)
-            .FirstAsync(cancellationToken);
+            .FirstAsync(stoppingToken);
 
-        if (!entity.UserOrganizations.Any(x => x.OrganizationId == organizationId))
-            throw new BadRequestExecption();
-
-        entity.DefaultOrganization = organizationId;
+        entity.DefaultTenant = tenantId;
         _dataStore.Set<UserEntity>().Update(entity);
-        await _dataStore.SaveChangesAsync(cancellationToken);
+        await _dataStore.SaveChangesAsync(stoppingToken);
     }
 
     #endregion User Management
 
-    #region License management
+    #region Remote data
 
-    public async Task GetLicenseAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets the effective user identifier from the http context.
+    /// </summary>
+    /// <returns>The effective user identifier</returns>
+    public string GetRemoteIdentifier()
     {
-        var userId = await GetIdentifierAsync(cancellationToken);
-        await GetLicenseAsync(userId, cancellationToken);
+        if (string.IsNullOrEmpty(_appConfiguration.Identity.RemoteId))
+        {
+            throw new Exception("The remote identifier configuration null or empty, " +
+                "please send the request with valid authentication");
+        }
+
+        var user = _contextAccessor.HttpContext?.User;
+        if (user!.Identity?.IsAuthenticated == false)
+        {
+            throw new Exception("Unable to find authentication context, " +
+                "please send the request with valid authentication");
+        }
+
+        var stringIdentifier = user!.FindFirst(_appConfiguration.Identity.RemoteId)?.Value;
+        if (string.IsNullOrEmpty(stringIdentifier))
+        {
+            throw new Exception("The name identifier is null or empty, " +
+                "please send the request with valid authentication");
+        }
+
+        return stringIdentifier;
     }
 
-    public async Task GetLicenseAsync(Guid userId, CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets the display name from the http context.
+    /// </summary>
+    /// <returns>The user mail</returns>
+    public string GetRemoteDisplayName()
     {
+        if (string.IsNullOrEmpty(_appConfiguration.Identity.DisplayName))
+            throw new Exception("The display name configuration null or empty, " +
+                "please send the request with valid authentication");
+
+        var user = _contextAccessor.HttpContext?.User;
+        if (user!.Identity?.IsAuthenticated == false)
+            throw new Exception("Unable to find authentication context, " +
+                "please send the request with valid authentication");
+
+        var claim = user!.FindFirst(_appConfiguration.Identity.DisplayName)?.Value;
+        if (string.IsNullOrEmpty(claim))
+            throw new Exception("The display name is null or empty, " +
+                "please send the request with valid authentication");
+        return claim;
     }
 
-    public async Task AddLicenseAsync(string license, CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets the user name from the http context.
+    /// </summary>
+    /// <returns>The user name</returns>
+    public string GetRemoteUserName()
     {
-        var userId = await GetIdentifierAsync(cancellationToken);
-        await AddLicenseAsync(userId, license, cancellationToken);
+        if (string.IsNullOrEmpty(_appConfiguration.Identity.UserName))
+            throw new Exception("The user name configuration null or empty, " +
+                "please send the request with valid authentication");
+
+        var user = _contextAccessor.HttpContext?.User;
+        if (user!.Identity?.IsAuthenticated == false)
+            throw new Exception("Unable to find authentication context, " +
+                "please send the request with valid authentication");
+
+        var claim = user!.FindFirst(_appConfiguration.Identity.UserName)?.Value;
+        if (string.IsNullOrEmpty(claim))
+            throw new Exception("The user name is null or empty, " +
+                "please send the request with valid authentication");
+        return claim;
     }
 
-    public async Task AddLicenseAsync(Guid userId, string license, CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets the email from the http context.
+    /// </summary>
+    /// <returns>The user email</returns>
+    public string GetRemoteEmail()
     {
+        if (string.IsNullOrEmpty(_appConfiguration.Identity.Email))
+            throw new Exception("The user mail configuration null or empty, " +
+                "please send the request with valid authentication");
+
+        var user = _contextAccessor.HttpContext?.User;
+        if (user!.Identity?.IsAuthenticated == false)
+            throw new Exception("Unable to find authentication context, " +
+                "please send the request with valid authentication");
+
+        var claim = user!.FindFirst(_appConfiguration.Identity.Email)?.Value;
+        if (string.IsNullOrEmpty(claim))
+            throw new Exception("The email address is null or empty, " +
+                "please send the request with valid authentication");
+        return claim;
     }
 
-    public async Task RemoveLicenseAsync(CancellationToken cancellationToken)
-    {
-        var userId = await GetIdentifierAsync(cancellationToken);
-        await RemoveLicenseAsync(userId, cancellationToken);
-    }
-
-    public async Task RemoveLicenseAsync(Guid userId, CancellationToken cancellationToken)
-    {
-    }
-
-    #endregion License management
+    #endregion Remote data
 }

@@ -83,7 +83,7 @@ namespace LicenseManager.Api.Service.Controllers
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<UserDto>> GetCurrentAsync(CancellationToken stoppingToken)
         {
-            var entity = await _userService.GetCurrentAsync(stoppingToken);
+            var entity = await _userService.GetAsync(stoppingToken);
             return Ok(_mapper.Map<UserDto>(entity));
         }
 
