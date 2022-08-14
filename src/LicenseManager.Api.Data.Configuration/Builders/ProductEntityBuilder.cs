@@ -52,9 +52,9 @@ namespace LicenseManager.Api.Data.Configuration.Builders
             builder.Property(x => x.CreatedUtc)
                 .IsRequired();
 
-            builder.HasOne(x => x.Organization)
+            builder.HasOne(x => x.Tenant)
                 .WithMany(x => x.Products)
-                .HasForeignKey(x => x.OrganizationId)
+                .HasForeignKey(x => x.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

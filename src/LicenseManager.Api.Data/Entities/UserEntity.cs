@@ -38,22 +38,22 @@ namespace LicenseManager.Api.Data.Entities
         public string DisplayName { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
-        public Guid? LicenseId { get; set; }
+        public bool Prenium { get; set; }
         public Guid DefaultOrganization { get; set; }
 
         #endregion Data
 
         #region Navigation
 
-        public ICollection<UserOrganizationEntity> UserOrganizations { get; set; }
-        public LicenseEntity License { get; set; }
+        public ICollection<PermissionEntity> Permissions { get; set; }
+
 
         #endregion Navigation
 
         #region Metadata
 
         public DateTimeOffset CreatedUtc { get; set; }
-        public DateTimeOffset? UpdatedDataUtc { get; set; }
+        public DateTimeOffset? UpdatedUtc { get; set; }
 
         #endregion Metadata
     }

@@ -24,29 +24,36 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LicenseManager.Api.Data.Configuration.Builders
 {
-    public class UserEntityBuilder : IEntityTypeConfiguration<UserEntity>
+    public class PermissionEntityBuilder : IEntityTypeConfiguration<PermissionEntity>
     {
-        public void Configure(EntityTypeBuilder<UserEntity> builder)
+        public void Configure(EntityTypeBuilder<PermissionEntity> builder)
         {
-            builder.ToTable(name: "Users");
+            builder.ToTable(name: "UserOrganizations");
 
             builder.HasKey(x => x.Id);
 
-            builder.HasIndex(x => x.Email)
-                .IsUnique();
-            builder.HasIndex(x => x.Prenium);
+            builder.Property(x => x.Role)
+                .IsRequired();
 
-            builder.Property(x => x.Email)
-                .HasMaxLength(64)
-                .IsRequired();
-            builder.Property(x => x.Email)
-                .HasMaxLength(64)
-                .IsRequired();
-            builder.Property(x => x.DisplayName)
-                .HasMaxLength(64)
+            builder.Property(x => x.CreatedBy)
                 .IsRequired();
             builder.Property(x => x.CreatedUtc)
                 .IsRequired();
+
+            builder.HasOne(x => x.Tenant)
+                .WithMany(x=>x.Permissions)
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.User)
+                .WithMany(x => x.Permissions)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

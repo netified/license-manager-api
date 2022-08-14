@@ -23,11 +23,11 @@ using System;
 namespace LicenseManager.Api.Data.Abstracts
 {
     /// <summary>
-    /// An entity can implement this interface if <see cref="UpdatedDataUtc" /> of this entity must be stored.
-    /// <see cref="UpdatedDataUtc" /> is automatically set when updating Entity.
+    /// An entity can implement this interface if <see cref="UpdatedUtc" /> of this entity must be stored.
+    /// <see cref="UpdatedUtc" /> is automatically set when updating Entity.
     /// </summary>
     public interface IModificationTrackable
     {
-        DateTimeOffset? UpdatedDataUtc { get; set; }
+        DateTimeOffset? UpdatedUtc { get; set; }
     }
 }

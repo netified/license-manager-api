@@ -21,7 +21,6 @@
 using LicenseManager.Api.Data.Configuration.Builders;
 using LicenseManager.Api.Data.Entities;
 using LicenseManager.Api.Data.Shared.Extensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
@@ -35,12 +34,6 @@ namespace LicenseManager.Api.Data.Shared.DbContexts
     /// <seealso cref="DbContext" />
     public class DataStoreDbContext : DbContext
     {
-        /// <summary>
-        /// Gets the context accessor.
-        /// </summary>
-        /// <value>The context accessor.</value>
-        protected IHttpContextAccessor ContextAccessor { get; }
-
         /// <summary>
         /// Gets or sets the licenses.
         /// </summary>
@@ -58,12 +51,12 @@ namespace LicenseManager.Api.Data.Shared.DbContexts
         public DbSet<ProductEntity> Products { get; set; }
 
         /// <summary>
-        /// Gets or sets the organizations.
+        /// Gets or sets the tenants.
         /// </summary>
         /// <value>
         /// The organizations.
         /// </value>
-        public DbSet<OrganizationEntity> Organizations { get; set; }
+        public DbSet<TenantEntity> Tenants { get; set; }
 
         /// <summary>
         /// Gets or sets the users.
@@ -74,23 +67,21 @@ namespace LicenseManager.Api.Data.Shared.DbContexts
         public DbSet<UserEntity> Users { get; set; }
 
         /// <summary>
-        /// Gets or sets the user organizations.
+        /// Gets or sets the user tenants.
         /// </summary>
         /// <value>
         /// The user organizations.
         /// </value>
-        public DbSet<UserOrganizationEntity> UserOrganizations { get; set; }
+        public DbSet<PermissionEntity> Permissions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataStoreDbContext"/> class.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="contextAccessor">The context accessor.</param>
-        public DataStoreDbContext(DbContextOptions<DataStoreDbContext> options, IHttpContextAccessor contextAccessor)
+        public DataStoreDbContext(DbContextOptions<DataStoreDbContext> options)
            : base(options)
-        {
-            ContextAccessor = contextAccessor;
-        }
+        { }
 
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,9 +90,9 @@ namespace LicenseManager.Api.Data.Shared.DbContexts
 
             modelBuilder.ApplyConfiguration(new LicenseEntityBuilder());
             modelBuilder.ApplyConfiguration(new ProductEntityBuilder());
-            modelBuilder.ApplyConfiguration(new OrganizationEntityBuilder());
+            modelBuilder.ApplyConfiguration(new TenantEntityBuilder());
             modelBuilder.ApplyConfiguration(new UserEntityBuilder());
-            modelBuilder.ApplyConfiguration(new UserOrganizationEntityBuilder());
+            modelBuilder.ApplyConfiguration(new PermissionEntityBuilder());
         }
 
         /// <summary>
@@ -118,7 +109,18 @@ namespace LicenseManager.Api.Data.Shared.DbContexts
         public Task<int> SaveChangesAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             this.UpdateAuditableEntities(userId);
-            return base.SaveChangesAsync(cancellationToken);
+            return SaveChangesAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Saves all changes made in this context to the database.
+        /// </summary>
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            this.UpdateTrackableEntities();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+
     }
 }

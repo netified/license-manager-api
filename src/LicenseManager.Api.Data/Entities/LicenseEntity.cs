@@ -40,7 +40,6 @@ namespace LicenseManager.Api.Data.Entities
         public LicenseType Type { get; set; }
         public DateTime ExpiresAt { get; set; }
         public Dictionary<string, string> AdditionalAttributes { get; set; }
-
         public Dictionary<string, string> ProductFeatures { get; set; }
 
         #endregion Data

@@ -31,6 +31,8 @@ namespace LicenseManager.Api.Data.Shared.Extensions
         /// <summary>
         /// Populate special properties for all Auditable Entities in context.
         /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="editorUserId">The editor user identifier.</param>
         public static void UpdateAuditableEntities(this DbContext context, Guid editorUserId)
         {
             DateTime utcNow = DateTime.UtcNow;
@@ -46,6 +48,13 @@ namespace LicenseManager.Api.Data.Shared.Extensions
             }
         }
 
+        /// <summary>
+        /// Populate special properties for single entity in context.
+        /// </summary>
+        /// <param name="dbEntry">The database entry.</param>
+        /// <param name="utcNow">The UTC now.</param>
+        /// <param name="editorUserId">The editor user identifier.</param>
+        /// <exception cref="System.NotSupportedException"></exception>
         private static void UpdateAuditableEntity(
             EntityEntry dbEntry, DateTime utcNow, Guid editorUserId)
         {

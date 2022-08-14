@@ -18,37 +18,41 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-using LicenseManager.Api.Data.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using LicenseManager.Api.Abstractions;
+using LicenseManager.Api.Data.Abstracts;
+using System;
 
-namespace LicenseManager.Api.Data.Configuration.Builders
+namespace LicenseManager.Api.Data.Entities
 {
-    public class UserOrganizationEntityBuilder : IEntityTypeConfiguration<UserOrganizationEntity>
+    /// <summary>
+    /// The user organization entity in the database.
+    /// </summary>
+    /// <seealso cref="ICreationAuditable" />
+    public class PermissionEntity : ICreationAuditable
     {
-        public void Configure(EntityTypeBuilder<UserOrganizationEntity> builder)
-        {
-            builder.ToTable(name: "UserOrganizations");
+        #region Data
 
-            builder.HasKey(x => x.Id);
+        public Guid Id { get; set; }
+        public Guid TenantId { get; set; }
+        public Guid? ProductId { get; set; }
+        public Guid UserId { get; set; }
+        public UserRoleType Role { get; set; }
 
-            builder.Property(x => x.Role)
-                .IsRequired();
+        #endregion Data
 
-            builder.Property(x => x.CreatedBy)
-                .IsRequired();
-            builder.Property(x => x.CreatedUtc)
-                .IsRequired();
+        #region Navigation
 
-            builder.HasOne(x => x.Organization)
-                .WithMany(x => x.UserOrganizations)
-                .HasForeignKey(x => x.OrganizationId)
-                .OnDelete(DeleteBehavior.Cascade);
+        public TenantEntity Tenant { get; set; }
+        public ProductEntity Product { get; set; }
+        public UserEntity User { get; set; }
 
-            builder.HasOne(x => x.User)
-                .WithMany(x => x.UserOrganizations)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        }
+        #endregion Navigation
+
+        #region Metadata
+
+        public Guid CreatedBy { get; set; }
+        public DateTimeOffset CreatedUtc { get; set; }
+
+        #endregion Metadata
     }
 }

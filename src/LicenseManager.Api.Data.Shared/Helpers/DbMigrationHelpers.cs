@@ -37,10 +37,10 @@ namespace LicenseManager.Api.Data.Shared.Helpers
         /// <summary>
         /// Apply all database migrations.
         /// </summary>
-        /// <typeparam name="TDataStoreDbContext"></typeparam>
-        /// <typeparam name="TDataProtectionDbContext"></typeparam>
-        /// <param name="host"></param>
-        /// <param name="databaseMigrationsConfiguration"></param>
+        /// <typeparam name="TDataStoreDbContext">The type of the data store database context.</typeparam>
+        /// <typeparam name="TDataProtectionDbContext">The type of the data protection database context.</typeparam>
+        /// <param name="host">The host.</param>
+        /// <param name="databaseMigrationsConfiguration">The database migrations configuration.</param>
         /// <returns></returns>
         public static async Task<bool> ApplyDbMigrationsAsync<TDataStoreDbContext, TDataProtectionDbContext>(IHost host, DatabaseMigrationsConfiguration databaseMigrationsConfiguration)
             where TDataStoreDbContext : DbContext
@@ -62,9 +62,9 @@ namespace LicenseManager.Api.Data.Shared.Helpers
         /// <summary>
         /// Ensure sure all databases are migrated.
         /// </summary>
-        /// <typeparam name="TDataStoreDbContext"></typeparam>
-        /// <typeparam name="TDataProtectionDbContext"></typeparam>
-        /// <param name="services"></param>
+        /// <typeparam name="TDataStoreDbContext">The type of the data store database context.</typeparam>
+        /// <typeparam name="TDataProtectionDbContext">The type of the data protection database context.</typeparam>
+        /// <param name="services">The services.</param>
         /// <returns></returns>
         public static async Task<bool> EnsureDatabasesMigratedAsync<TDataStoreDbContext, TDataProtectionDbContext>(IServiceProvider services)
             where TDataStoreDbContext : DbContext

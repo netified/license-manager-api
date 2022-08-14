@@ -33,7 +33,7 @@ namespace LicenseManager.Api.Data.Entities
         #region Data
 
         public Guid Id { get; set; }
-        public Guid OrganizationId { get; set; }
+        public Guid TenantId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Company { get; set; }
@@ -45,9 +45,10 @@ namespace LicenseManager.Api.Data.Entities
 
         #region Navigation
 
-        public OrganizationEntity Organization { get; set; }
+        public TenantEntity Tenant { get; set; }
 
         public ICollection<LicenseEntity> Licenses { get; set; }
+        public ICollection<PermissionEntity> Permissions { get; set; }
 
         #endregion Navigation
 

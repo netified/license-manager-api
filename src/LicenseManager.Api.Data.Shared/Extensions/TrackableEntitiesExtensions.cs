@@ -46,6 +46,12 @@ namespace LicenseManager.Api.Data.Shared.Extensions
             }
         }
 
+        /// <summary>
+        /// Populate special properties for single entity in context.
+        /// </summary>
+        /// <param name="dbEntry">The database entry.</param>
+        /// <param name="utcNow">The UTC now.</param>
+        /// <exception cref="System.NotSupportedException"></exception>
         private static void UpdateTrackableEntity(EntityEntry dbEntry, DateTimeOffset utcNow)
         {
             object entity = dbEntry.Entity;
@@ -62,8 +68,8 @@ namespace LicenseManager.Api.Data.Shared.Extensions
                 case EntityState.Modified:
                     if (entity is IModificationTrackable modificatonTrackable)
                     {
-                        modificatonTrackable.UpdatedDataUtc = utcNow;
-                        dbEntry.CurrentValues[nameof(IModificationTrackable.UpdatedDataUtc)] = utcNow;
+                        modificatonTrackable.UpdatedUtc = utcNow;
+                        dbEntry.CurrentValues[nameof(IModificationTrackable.UpdatedUtc)] = utcNow;
 
                         if (entity is ICreationTrackable)
                         {

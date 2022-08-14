@@ -18,34 +18,41 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-using LicenseManager.Api.Data.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using LicenseManager.Api.Abstractions;
+using LicenseManager.Api.Data.Abstracts;
+using System;
+using System.Collections.Generic;
 
-namespace LicenseManager.Api.Data.Configuration.Builders
+namespace LicenseManager.Api.Data.Entities
 {
-    public class OrganizationEntityBuilder : IEntityTypeConfiguration<OrganizationEntity>
+    /// <summary>
+    /// The organization entity in the database.
+    /// </summary>
+    /// <seealso cref="ICreationAuditable" />
+    public class TenantEntity : ICreationAuditable
     {
-        public void Configure(EntityTypeBuilder<OrganizationEntity> builder)
-        {
-            builder.ToTable(name: "Organizations");
+        #region Data
 
-            builder.HasKey(x => x.Id);
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public TenantType Type { get; set; }
 
-            builder.HasIndex(x => x.Name)
-                .IsUnique();
+        #endregion Data
 
-            builder.Property(x => x.Name)
-                .HasMaxLength(64)
-                .IsRequired(true);
-            builder.Property(x => x.Description)
-                .HasMaxLength(128)
-                .IsRequired(false);
+        #region Navigation
 
-            builder.Property(x => x.CreatedBy)
-                .IsRequired();
-            builder.Property(x => x.CreatedUtc)
-                .IsRequired();
-        }
+        public ICollection<PermissionEntity> Permissions { get; set; }
+
+        public ICollection<ProductEntity> Products { get; set; }
+
+        #endregion Navigation
+
+        #region Metadata
+
+        public Guid CreatedBy { get; set; }
+        public DateTimeOffset CreatedUtc { get; set; }
+
+        #endregion Metadata
     }
 }

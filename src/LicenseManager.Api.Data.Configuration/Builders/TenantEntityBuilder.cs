@@ -18,41 +18,34 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-using LicenseManager.Api.Abstractions;
-using LicenseManager.Api.Data.Abstracts;
-using System;
-using System.Collections.Generic;
+using LicenseManager.Api.Data.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LicenseManager.Api.Data.Entities
+namespace LicenseManager.Api.Data.Configuration.Builders
 {
-    /// <summary>
-    /// The organization entity in the database.
-    /// </summary>
-    /// <seealso cref="ICreationAuditable" />
-    public class OrganizationEntity : ICreationAuditable
+    public class TenantEntityBuilder : IEntityTypeConfiguration<TenantEntity>
     {
-        #region Data
+        public void Configure(EntityTypeBuilder<TenantEntity> builder)
+        {
+            builder.ToTable(name: "Organizations");
 
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public OrganizationType Type { get; set; }
+            builder.HasKey(x => x.Id);
 
-        #endregion Data
+            builder.HasIndex(x => x.Name)
+                .IsUnique();
 
-        #region Navigation
+            builder.Property(x => x.Name)
+                .HasMaxLength(64)
+                .IsRequired(true);
+            builder.Property(x => x.Description)
+                .HasMaxLength(128)
+                .IsRequired(false);
 
-        public ICollection<UserOrganizationEntity> UserOrganizations { get; set; }
-
-        public ICollection<ProductEntity> Products { get; set; }
-
-        #endregion Navigation
-
-        #region Metadata
-
-        public Guid CreatedBy { get; set; }
-        public DateTimeOffset CreatedUtc { get; set; }
-
-        #endregion Metadata
+            builder.Property(x => x.CreatedBy)
+                .IsRequired();
+            builder.Property(x => x.CreatedUtc)
+                .IsRequired();
+        }
     }
 }
