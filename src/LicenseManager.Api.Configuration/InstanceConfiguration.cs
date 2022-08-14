@@ -29,7 +29,7 @@ namespace LicenseManager.Api.Configuration
         /// </summary>
         public InstanceConfiguration()
         {
-            Type = InstanceType.OnPremises;
+            Type = InstanceType.OnPremise;
         }
     }
 }

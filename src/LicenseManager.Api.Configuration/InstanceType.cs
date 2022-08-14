@@ -23,6 +23,6 @@ namespace LicenseManager.Api.Configuration
     public enum InstanceType
     {
         Cloud = 0,
-        OnPremises = 1
+        OnPremise = 1
     }
 }
