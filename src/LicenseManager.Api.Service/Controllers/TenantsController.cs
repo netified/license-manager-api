@@ -137,11 +137,11 @@ namespace LicenseManager.Api.Service.Controllers
         /// <param name="stoppingToken">The cancellation token.</param>
         [Authorize(Policy = "TenantReader")]
         [HttpGet("{tenantId:guid}/permissions")]
-        [ProducesResponseType(typeof(List<UserTenantDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<UserTenantDto>>> ListPermissionAsync(Guid tenantId, CancellationToken stoppingToken = default)
+        [ProducesResponseType(typeof(List<PermissionDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<PermissionDto>>> ListPermissionAsync(Guid tenantId, CancellationToken stoppingToken = default)
         {
             var entities = await _tenantService.ListPermissionAsync(tenantId, stoppingToken);
-            return Ok(_mapper.Map<List<UserTenantDto>>(entities));
+            return Ok(_mapper.Map<List<PermissionDto>>(entities));
         }
 
         /// <summary>
