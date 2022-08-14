@@ -74,7 +74,7 @@ namespace LicenseManager.Api.Service
             services.Configure<SieveOptions>(Configuration.GetSection("SieveConfiguration"));
 
             // Register configuration
-            var productConfiguration = new ApplicationConfiguration(Configuration);
+            var productConfiguration = new AppConfiguration(Configuration);
             services.AddSingleton(productConfiguration);
 
             // Add DbContexts

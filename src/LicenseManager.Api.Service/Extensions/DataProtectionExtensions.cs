@@ -38,7 +38,7 @@ namespace LicenseManager.Api.Service.Extensions
         /// <typeparam name="TDataProtectionDbContext">The type of the data protection database context.</typeparam>
         /// <param name="services">The services.</param>
         /// <param name="configuration">The configuration.</param>
-        public static void AddDataProtection<TDataProtectionDbContext>(this IServiceCollection services, ApplicationConfiguration configuration)
+        public static void AddDataProtection<TDataProtectionDbContext>(this IServiceCollection services, AppConfiguration configuration)
             where TDataProtectionDbContext : DbContext, IDataProtectionKeyContext
         {
             AddDataProtection<TDataProtectionDbContext>(

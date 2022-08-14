@@ -23,7 +23,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace LicenseManager.Api.Configuration
 {
-    public class ApplicationConfiguration
+    public class AppConfiguration
     {
         /// <summary>
         /// The settings for test deployments.
@@ -69,7 +69,7 @@ namespace LicenseManager.Api.Configuration
         /// Applies configuration parsed from an appsettings file into these options.
         /// </summary>
         /// <param name="configuration">The configuration to bind into this instance.</param>
-        public ApplicationConfiguration(IConfiguration configuration)
+        public AppConfiguration(IConfiguration configuration)
         {
             configuration.GetSection(nameof(TestingConfiguration)).Bind(Testing);
             configuration.GetSection("ConnectionStrings").Bind(ConnectionStrings);

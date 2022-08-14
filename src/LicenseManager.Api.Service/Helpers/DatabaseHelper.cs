@@ -42,7 +42,7 @@ namespace LicenseManager.Api.Service.Helpers
         /// <typeparam name="TDataProtectionDbContext"></typeparam>
         /// <param name="services"></param>
         /// <param name="configuration"></param>
-        public static void RegisterDbContexts<TDataStoreDbContext, TDataProtectionDbContext>(this IServiceCollection services, ApplicationConfiguration configuration)
+        public static void RegisterDbContexts<TDataStoreDbContext, TDataProtectionDbContext>(this IServiceCollection services, AppConfiguration configuration)
             where TDataStoreDbContext : DbContext
             where TDataProtectionDbContext : DbContext, IDataProtectionKeyContext
         {
@@ -84,7 +84,7 @@ namespace LicenseManager.Api.Service.Helpers
         /// <typeparam name="TDataProtectionDbContext">The type of the data protection database context.</typeparam>
         /// <param name="services">The services.</param>
         /// <param name="configuration">The configuration.</param>
-        private static void RegisterDbContextsProduction<TDataStoreDbContext, TDataProtectionDbContext>(this IServiceCollection services, ApplicationConfiguration configuration)
+        private static void RegisterDbContextsProduction<TDataStoreDbContext, TDataProtectionDbContext>(this IServiceCollection services, AppConfiguration configuration)
             where TDataStoreDbContext : DbContext
             where TDataProtectionDbContext : DbContext, IDataProtectionKeyContext
         {
