@@ -26,6 +26,7 @@ using LicenseManager.Api.Data.Shared.DbContexts;
 using LicenseManager.Api.Domain.Exceptions;
 using LicenseManager.Api.Domain.Extensions;
 using LicenseManager.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -48,8 +49,7 @@ public class ProductService
     #region Service
 
     private readonly DataStoreDbContext _dataStore;
-    private readonly IdentityService _identityService;
-    private readonly PermissionService _permissionService;
+    private readonly UserService _userService;
     private readonly IMapper _mapper;
     private readonly ISieveProcessor _sieveProcessor;
     private readonly IDataProtectionProvider _dataProtection;
@@ -57,21 +57,10 @@ public class ProductService
 
     #endregion Service
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ProductService"/> class.
-    /// </summary>
-    /// <param name="dataStore">The data store.</param>
-    /// <param name="identityService">The identity service.</param>
-    /// <param name="permissionService">The permission service.</param>
-    /// <param name="mapper">The mapper.</param>
-    /// <param name="sieveProcessor">The sieve processor.</param>
-    /// <param name="dataProtection">The data protection.</param>
-    /// <param name="logger">The logger.</param>
-    public ProductService(DataStoreDbContext dataStore, IdentityService identityService, PermissionService permissionService, IMapper mapper, ISieveProcessor sieveProcessor, IDataProtectionProvider dataProtection, ILogger<ProductService> logger)
+    public ProductService(DataStoreDbContext dataStore, UserService userService, IMapper mapper, ISieveProcessor sieveProcessor, IDataProtectionProvider dataProtection, ILogger<ProductService> logger)
     {
         _dataStore = dataStore ?? throw new ArgumentNullException(nameof(dataStore));
-        _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
-        _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
+        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _sieveProcessor = sieveProcessor ?? throw new ArgumentNullException(nameof(sieveProcessor));
         _dataProtection = dataProtection ?? throw new ArgumentNullException(nameof(dataProtection));
@@ -82,19 +71,17 @@ public class ProductService
     /// Retrieve the products from the data store using the pagination functionality.
     /// </summary>
     /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="stoppingToken"></param>
     /// <returns></returns>
-    public async Task<PagedResult<ProductEntity>> ListAsync(SieveModel request, CancellationToken cancellationToken)
+    public async Task<PagedResult<ProductEntity>> ListAsync(Guid tenantId, string? filters, string? sorts, int? page, int? pageSize, CancellationToken stoppingToken = default)
     {
-        var userId = await _identityService.GetIdentifierAsync(cancellationToken);
+        var request = new SieveModel() { Filters = filters, Sorts = sorts, Page = page, PageSize = pageSize };
         var query = _dataStore.Set<ProductEntity>()
             .AsNoTracking()
-            .Include(x => x.Organization)
-                .ThenInclude(x => x.UserOrganizations)
-            .Include(x=>x.Licenses)
-            .Where(x => x.Organization.UserOrganizations.Any(x => x.UserId == userId))
-            .AsSplitQuery();
-        return await _sieveProcessor.GetPagedAsync(query, request, cancellationToken);
+            .Include(x => x.Licenses)
+            .Include(x => x.Permissions)
+            .Where(x => x.TenantId == tenantId);
+        return await _sieveProcessor.GetPagedAsync(query, request, stoppingToken);
     }
 
     /// <summary>
@@ -104,19 +91,18 @@ public class ProductService
     /// <param name="cancellationToken"></param>
     /// <exception cref="ConflitException"></exception>
     /// <returns></returns>
-    public async Task<ProductEntity> AddAsync(ProductRequest request, CancellationToken cancellationToken)
+    public async Task<ProductEntity> AddAsync(Guid tenantId, ProductRequest request, CancellationToken stoppingToken)
     {
-        if (!await _permissionService.CanManageOrganization(request.OrganizationId, cancellationToken))
-            throw new UnauthorizedAccessException();
 
         // Detect if the request conflicts with the data store
         var detectConflit = await _dataStore.Set<ProductEntity>()
-            .AnyAsync(x => x.Name == request.Name && x.OrganizationId == request.OrganizationId, cancellationToken);
+            .AnyAsync(x => x.Name == request.Name && x.TenantId == tenantId, stoppingToken);
         if (detectConflit)
             throw new ConflitException($"The following product name already exists: {request.Name}");
 
         // Map the product request to product
         var product = _mapper.Map<ProductEntity>(request);
+        product.TenantId = tenantId;
 
         // Create a new public/private key pair for your product
         var passPhrase = GeneratePassPhrase();
@@ -132,10 +118,10 @@ public class ProductService
         product.PublicKey = protector.Protect(publicKey);
 
         // Save data to the data store
-        var userId = await _identityService.GetIdentifierAsync(cancellationToken);
-        await _dataStore.Set<ProductEntity>().AddAsync(product, cancellationToken);
-        await _dataStore.SaveChangesAsync(userId, cancellationToken);
-        _logger.LogInformation("The following product has been created: {productName}", product.Name);
+        await _dataStore.Set<ProductEntity>().AddAsync(product, stoppingToken);
+        await _dataStore.SaveChangesAsync(
+            userId: await _userService.GetIdentifierAsync(stoppingToken),
+            cancellationToken: stoppingToken);
 
         return product;
     }
@@ -154,9 +140,6 @@ public class ProductService
     /// <returns></returns>
     public async Task<ProductEntity> GetAsync(Guid productId, CancellationToken cancellationToken)
     {
-        if (!await _permissionService.CanViewProduct(productId, cancellationToken))
-            throw new UnauthorizedAccessException();
-
         // Retrieve the product from the data store
         var productEntity = await _dataStore.Set<ProductEntity>()
             .Where(x => x.Id == productId)
@@ -177,10 +160,6 @@ public class ProductService
     /// <returns></returns>
     public async Task RemoveAsync(Guid productId, CancellationToken cancellationToken)
     {
-        if (!await _permissionService.CanManageProduct(productId, cancellationToken))
-            throw new UnauthorizedAccessException();
-
-        // Retrieve the product from the datastore
         var productEntity = await GetAsync(productId, cancellationToken);
 
         // Delete product in data store
@@ -208,9 +187,6 @@ public class ProductService
     /// <returns></returns>
     public async Task<ProductBackupDto> ExportAsync(Guid productId, CancellationToken cancellationToken)
     {
-        if (!await _permissionService.CanManageProduct(productId, cancellationToken))
-            throw new UnauthorizedAccessException();
-
         // Retrieve the product from the datastore
         var productEntity = await GetAsync(productId, cancellationToken);
 
@@ -225,7 +201,7 @@ public class ProductService
 
         // Calculate Checksum
         var agregate = new StringBuilder();
-        agregate.Append(productBackup.Id).Append(productBackup.OrganizationId).Append(productBackup.Name);
+        //agregate.Append(productBackup.Id).Append(productBackup.te).Append(productBackup.Name);
         agregate.Append(productBackup.Description).Append(productBackup.Company);
         agregate.Append(productBackup.PassPhrase).Append(productBackup.PrivateKey).Append(productBackup.PublicKey);
         productBackup.Checksum = agregate.ToString().ComputeMd5Hash();
@@ -240,22 +216,17 @@ public class ProductService
     /// <param name="cancellationToken"></param>
     /// <exception cref="ConflitException"></exception>
     /// <exception cref="BadRequestExecption"></exception>
-    public async Task<ProductEntity> ImportAsync(ProductBackupDto backup, bool checksumValidation, CancellationToken cancellationToken)
+    public async Task<ProductEntity> ImportAsync(Guid tenantId, ProductBackupDto backup, CancellationToken cancellationToken)
     {
-        if (!await _permissionService.CanManageOrganization(backup.OrganizationId, cancellationToken))
-            throw new UnauthorizedAccessException();
-
         // Calculate and validate the checksum
-        if (checksumValidation)
-        {
-            var agregate = new StringBuilder();
-            agregate.Append(backup.Id).Append(backup.OrganizationId).Append(backup.Name);
-            agregate.Append(backup.Description).Append(backup.Company);
-            agregate.Append(backup.PassPhrase).Append(backup.PrivateKey).Append(backup.PublicKey);
-            var checksum = agregate.ToString().ComputeMd5Hash();
-            if (backup.Checksum != checksum)
-                throw new BadRequestExecption("Invalid checksum");
-        }
+        var agregate = new StringBuilder();
+        //agregate.Append(backup.Id).Append(backup.OrganizationId).Append(backup.Name);
+        agregate.Append(backup.Description).Append(backup.Company);
+        agregate.Append(backup.PassPhrase).Append(backup.PrivateKey).Append(backup.PublicKey);
+        var checksum = agregate.ToString().ComputeMd5Hash();
+        if (backup.Checksum != checksum)
+            throw new BadRequestExecption("Invalid checksum");
+        
 
         // Detect if the request conflicts with the data store
         var detectNameConflit = await _dataStore.Set<ProductEntity>().AnyAsync(x => x.Name == backup.Name, cancellationToken);
@@ -267,6 +238,7 @@ public class ProductService
 
         // Map the product request to product
         var product = _mapper.Map<ProductEntity>(backup);
+        product.TenantId = tenantId;
 
         // Protect sensitive data
         var protector = _dataProtection.CreateProtector(DataProtectionConsts.DefaultPurpose);

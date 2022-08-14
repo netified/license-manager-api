@@ -19,6 +19,7 @@
 // IN THE SOFTWARE.
 
 using AutoMapper;
+using FluentValidation;
 using LicenseManager.Api.Abstractions;
 using LicenseManager.Api.Data.Entities;
 
@@ -37,6 +38,57 @@ namespace LicenseManager.Api.Domain.Models
             CreateMap<PagedResult<ProductEntity>, PagedResult<ProductDto>>();
             CreateMap<ProductEntity, ProductDto>()
                 .ForMember(dest => dest.LicenseCount, o => o.MapFrom(src => src.Licenses.Count));
+        }
+    }
+
+    /// <summary>
+    /// Product request configuration for maps.
+    /// </summary>
+    public class ProductRequestProfile : Profile
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductRequestProfile"/> class.
+        /// </summary>
+        public ProductRequestProfile()
+        {
+            CreateMap<ProductRequest, ProductEntity>();
+        }
+    }
+
+    /// <summary>
+    /// Product request validator.
+    /// </summary>
+    public class ProductRequestValidator : AbstractValidator<ProductRequest>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductRequestValidator"/> class.
+        /// </summary>
+        public ProductRequestValidator()
+        {
+            RuleFor(x => x.Name).NotEmpty();
+            RuleFor(x => x.Name).Length(4, 64);
+
+            RuleFor(x => x.Description).Length(0, 128);
+
+            RuleFor(x => x.Company).Length(4, 64);
+        }
+    }
+
+    /// <summary>
+    /// Product backup configuration for maps.
+    /// </summary>
+    public class ProductBackupProfile : Profile
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductBackupProfile"/> class.
+        /// </summary>
+        public ProductBackupProfile()
+        {
+            CreateMap<ProductEntity, ProductBackupDto>()
+                .ForMember(dest => dest.PassPhrase, o => o.Ignore())
+                .ForMember(dest => dest.PrivateKey, o => o.Ignore())
+                .ForMember(dest => dest.PublicKey, o => o.Ignore())
+                .ReverseMap();
         }
     }
 }

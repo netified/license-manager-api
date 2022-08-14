@@ -21,21 +21,23 @@
 using AutoMapper;
 using LicenseManager.Api.Abstractions;
 using LicenseManager.Api.Data.Entities;
+using LicenseManager.Api.Domain.Extensions;
 
 namespace LicenseManager.Api.Domain.Models
 {
     /// <summary>
-    /// User of organization configuration for maps.
+    /// User configuration for maps.
     /// </summary>
-    public class UserOrganizationProfile : Profile
+    public class UserProfile : Profile
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserOrganizationProfile"/> class.
+        /// Initializes a new instance of the <see cref="UserProfile"/> class.
         /// </summary>
-        public UserOrganizationProfile()
+        public UserProfile()
         {
-            CreateMap<PagedResult<UserOrganizationEntity>, PagedResult<UserOrganizationDto>>();
-            CreateMap<UserOrganizationEntity, UserOrganizationDto>();
+            CreateMap<PagedResult<UserEntity>, PagedResult<UserDto>>();
+            CreateMap<UserEntity, UserDto>()
+                .ForMember(dest => dest.Email, o => o.MapFrom(src => src.Email.ObfuscateEmail()));
         }
     }
 }

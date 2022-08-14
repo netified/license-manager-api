@@ -79,10 +79,11 @@ namespace LicenseManager.Api.Domain.Services
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<PagedResult<LicenseEntity>> ListAsync(Guid productId, SieveModel request, CancellationToken cancellationToken)
+        public async Task<PagedResult<LicenseEntity>> ListAsync(Guid productId, string? filters, string? sorts, int? page, int? pageSize, CancellationToken stoppingToken = default)
         {
+            var request = new SieveModel() { Filters = filters, Sorts = sorts, Page = page, PageSize = pageSize };
             var productEntity = await _dataStore.Set<ProductEntity>()
-                .AsNoTracking().Where(x => x.Id == productId).AnyAsync(cancellationToken);
+                .AsNoTracking().Where(x => x.Id == productId).AnyAsync(stoppingToken);
             if (productEntity == default)
             {
                 _logger.LogError("Unable to find the following product: {0}", productId);
@@ -93,7 +94,7 @@ namespace LicenseManager.Api.Domain.Services
                 .AsNoTracking()
                 .Where(x => x.ProductId == productId)
                 .AsQueryable();
-            return await _sieveProcessor.GetPagedAsync(query, request, cancellationToken);
+            return await _sieveProcessor.GetPagedAsync(query, request, stoppingToken);
         }
 
         /// <summary>
@@ -104,16 +105,8 @@ namespace LicenseManager.Api.Domain.Services
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<LicenseEntity> GetAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
+        public async Task<LicenseEntity> GetAsync(Guid licenseId, CancellationToken cancellationToken)
         {
-            var productEntity = await _dataStore.Set<ProductEntity>()
-                .AsNoTracking().Where(x => x.Id == productId).AnyAsync(cancellationToken);
-            if (productEntity == default)
-            {
-                _logger.LogError("Unable to find the following product: {0}", productId);
-                throw new NotFoundException($"Unable to find the following product: {productId}");
-            }
-
             var licenseEntity = await _dataStore.Set<LicenseEntity>()
                 .Where(x => x.Id == licenseId)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -134,17 +127,9 @@ namespace LicenseManager.Api.Domain.Services
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotFoundException"></exception>
-        public async Task RemoveAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
+        public async Task RemoveAsync(Guid licenseId, CancellationToken cancellationToken)
         {
-            var productEntity = await _dataStore.Set<ProductEntity>()
-           .AsNoTracking().Where(x => x.Id == productId).AnyAsync(cancellationToken);
-            if (productEntity == default)
-            {
-                _logger.LogError("Unable to find the following product: {0}", productId);
-                throw new NotFoundException($"Unable to find the following product: {productId}");
-            }
-
-            var licenseEntity = await GetAsync(productId, licenseId, cancellationToken);
+            var licenseEntity = await GetAsync(licenseId, cancellationToken);
             _dataStore.Remove(licenseEntity);
             await _dataStore.SaveChangesAsync(cancellationToken);
         }
@@ -166,21 +151,29 @@ namespace LicenseManager.Api.Domain.Services
             return license;
         }
 
-        public async Task<License> GenerateAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
+        public async Task<License> GenerateAsync(Guid licenseId, CancellationToken cancellationToken)
         {
             // Retrieve the elements
-            var product = await _productService.GetAsync(productId, cancellationToken);
-            var licenseEntity = await GetAsync(productId, licenseId, cancellationToken);
+            var licenseEntity = await _dataStore.Set<LicenseEntity>()
+                .AsNoTracking()
+                .Include(x=>x.Product)
+                .Where(x => x.Id == licenseId)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (licenseEntity == default)
+            {
+                _logger.LogError("Unable to find the following product license: {0}", licenseId);
+                throw new NotFoundException($"Unable to find the following product license: {licenseId}");
+            }
 
             // Unprotect private key of the product.
             var protector = _dataProtection.CreateProtector(DataProtectionConsts.DefaultPurpose);
-            var passPhrase = protector.Unprotect(product.PassPhrase);
-            var privateKey = protector.Unprotect(product.PrivateKey);
+            var passPhrase = protector.Unprotect(licenseEntity.Product.PassPhrase);
+            var privateKey = protector.Unprotect(licenseEntity.Product.PrivateKey);
 
             // Generate license data
             var licenseBuild = License.New();
             licenseBuild.WithUniqueIdentifier(licenseEntity.Id);
-            licenseBuild.WithProduct(product.Id, product.Name);
+            licenseBuild.WithProduct(licenseEntity.Product.Id, licenseEntity.Product.Name);
             licenseBuild.As(licenseEntity.Type);
             licenseBuild.ExpiresAt(licenseEntity.ExpiresAt);
             if (licenseEntity.AdditionalAttributes?.Count > 0)
@@ -190,16 +183,16 @@ namespace LicenseManager.Api.Domain.Services
             licenseBuild.LicensedTo(x =>
             {
                 x.Email = licenseEntity.Email;
-                x.Company = product.Company;
+                x.Company = licenseEntity.Product.Company;
                 x.Name = licenseEntity.Name;
             });
 
             return licenseBuild.CreateAndSignWithPrivateKey(privateKey, passPhrase);
         }
 
-        public async Task<LicenseBackupDto> ExportAsync(Guid productId, Guid licenseId, CancellationToken cancellationToken)
+        public async Task<LicenseBackupDto> ExportAsync(Guid licenseId, CancellationToken cancellationToken)
         {
-            var licenseEntity = await GetAsync(productId, licenseId, cancellationToken);
+            var licenseEntity = await GetAsync(licenseId, cancellationToken);
             return _mapper.Map<LicenseBackupDto>(licenseEntity);
         }
 

@@ -19,12 +19,27 @@
 // IN THE SOFTWARE.
 
 using AutoMapper;
+using FluentValidation;
 using LicenseManager.Api.Abstractions;
 using LicenseManager.Api.Data.Entities;
-using System;
 
-namespace LicenseManager.Api.Domain.Models
+namespace LicenseManager.Api.Domain.Profiles
 {
+    /// <summary>
+    /// License configuration for maps.
+    /// </summary>
+    public class LicenseProfile : Profile
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LicenseProfile"/> class.
+        /// </summary>
+        public LicenseProfile()
+        {
+            CreateMap<LicenseEntity, LicenseDto>().ReverseMap();
+            CreateMap<PagedResult<LicenseEntity>, PagedResult<LicenseDto>>();
+        }
+    }
+
     /// <summary>
     /// License request configuration for maps.
     /// </summary>
@@ -37,6 +52,42 @@ namespace LicenseManager.Api.Domain.Models
         {
             CreateMap<LicenseRequest, LicenseEntity>()
                  .ForMember(dest => dest.ExpiresAt, o => o.MapFrom(src => DateTime.Now.AddDays(src.Duration)));
+        }
+    }
+
+    /// <summary>
+    /// License request validator.
+    /// </summary>
+    public class LicenseRequestValidator : AbstractValidator<LicenseRequest>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LicenseRequestValidator"/> class.
+        /// </summary>
+        public LicenseRequestValidator()
+        {
+            RuleFor(x => x.Name).NotNull();
+            RuleFor(x => x.Name).Length(4, 64);
+
+            RuleFor(x => x.Email).NotNull();
+            RuleFor(x => x.Email).EmailAddress();
+            RuleFor(x => x.Email).Length(4, 64);
+
+            RuleFor(x => x.Duration).NotNull();
+            RuleFor(x => x.Duration).InclusiveBetween(1, 1460);
+        }
+    }
+
+    /// <summary>
+    /// License backup configuration for maps.
+    /// </summary>
+    public class LicenseBackupProfile : Profile
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LicenseBackupProfile"/> class.
+        /// </summary>
+        public LicenseBackupProfile()
+        {
+            CreateMap<LicenseEntity, LicenseBackupDto>().ReverseMap();
         }
     }
 }

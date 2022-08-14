@@ -20,11 +20,44 @@
 
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace LicenseManager.Api.Domain.Extensions
 {
+    /// <summary>
+    /// String Extensions
+    /// </summary>
     public static class StringExtensions
     {
+        /// <summary>
+        /// Obfuscates the email.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <returns>The obfuscated email</returns>
+        public static string ObfuscateEmail(this string email)
+        {
+            var displayCase = email;
+
+            var partToBeObfuscated = Regex.Match(displayCase, "[^@]*").Value;
+            if (partToBeObfuscated.Length - 3 > 0)
+            {
+                var obfuscation = "";
+                for (var i = 0; i < partToBeObfuscated.Length - 3; i++) obfuscation += "*";
+                displayCase = string.Format("{0}{1}{2}{3}", displayCase[0], displayCase[1], obfuscation, displayCase[(partToBeObfuscated.Length - 1)..]);
+            }
+            else if (partToBeObfuscated.Length - 3 == 0)
+            {
+                displayCase = string.Format("{0}*{1}", displayCase[0], displayCase[2..]);
+            }
+
+            return displayCase;
+        }
+
+        /// <summary>
+        /// Computes the message to MD5 hash.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>The computed message</returns>
         public static string ComputeMd5Hash(this string message)
         {
             using (MD5 md5 = MD5.Create())

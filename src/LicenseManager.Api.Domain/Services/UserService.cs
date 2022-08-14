@@ -128,7 +128,7 @@ public class UserService
             DisplayName = "Service Account",
             UserName = GetRemoteUserName(),
             Email = $"{GetRemoteUserName()}@netified.io".ToLower(),
-            Prenium = _appConfiguration.Instance.Type == InstanceType.OnPremises
+            Prenium = _appConfiguration.Instance.Type == InstanceType.OnPremise
         };
 
         _dataStore.Set<UserEntity>().Add(userEntity);
@@ -148,7 +148,7 @@ public class UserService
             DisplayName = GetRemoteDisplayName(),
             UserName = GetRemoteUserName(),
             Email = GetRemoteEmail(),
-            Prenium = _appConfiguration.Instance.Type == InstanceType.OnPremises
+            Prenium = _appConfiguration.Instance.Type == InstanceType.OnPremise
         };
 
         _dataStore.Set<UserEntity>().Add(userEntity);

@@ -18,27 +18,56 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+using AutoMapper;
 using FluentValidation;
 using LicenseManager.Api.Abstractions;
+using LicenseManager.Api.Data.Entities;
 
 namespace LicenseManager.Api.Domain.Models
 {
     /// <summary>
-    /// Product request validator.
+    /// Tenant configuration for maps.
     /// </summary>
-    public class ProductRequestValidator : AbstractValidator<ProductRequest>
+    public class TenantProfile : Profile
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProductRequestValidator"/> class.
+        /// Initializes a new instance of the <see cref="TenantProfile"/> class.
         /// </summary>
-        public ProductRequestValidator()
+        public TenantProfile()
+        {
+            CreateMap<PagedResult<TenantEntity>, PagedResult<TenantDto>>();
+            CreateMap<TenantEntity, TenantDto>()
+                .ForMember(dest => dest.MemberCount, o => o.MapFrom(src => src.Permissions.Count));
+        }
+    }
+
+    /// <summary>
+    /// Tenant request configuration for maps.
+    /// </summary>
+    public class TenantRequestProfile : Profile
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TenantRequestProfile"/> class.
+        /// </summary>
+        public TenantRequestProfile()
+        {
+            CreateMap<TenantRequest, TenantEntity>();
+        }
+    }
+
+    /// <summary>
+    /// Tenant request validator.
+    /// </summary>
+    public class TenantRequestValidator : AbstractValidator<TenantRequest>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TenantRequestValidator"/> class.
+        /// </summary>
+        public TenantRequestValidator()
         {
             RuleFor(x => x.Name).NotEmpty();
             RuleFor(x => x.Name).Length(4, 64);
-
             RuleFor(x => x.Description).Length(0, 128);
-
-            RuleFor(x => x.Company).Length(4, 64);
         }
     }
 }
