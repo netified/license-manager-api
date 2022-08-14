@@ -88,19 +88,19 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Update the default organization of the current user.
+        /// 🧊 Update the default tenant of the current user.
         /// </summary>
         /// <remarks>
-        /// The default organization is used for the administration website.
+        /// The default tenant is used for the administration website.
         /// </remarks>
-        /// <param name="organizationId">The organization identifier.</param>
+        /// <param name="tenantId">The tenant identifier.</param>
         /// <param name="stoppingToken">The cancellation token.</param>
-        [HttpPut("me/organizations/{organizationId:guid}")]
+        [HttpPut("me/tenants/{tenantId:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> SetOrganizationAsync(Guid organizationId, CancellationToken stoppingToken)
+        public async Task<ActionResult> SetDefaultTenantAsync(Guid tenantId, CancellationToken stoppingToken)
         {
-            await _userService.SetDefaultOrganizationAsync(organizationId, stoppingToken);
+            await _userService.SetDefaultTenantAsync(tenantId, stoppingToken);
             return NoContent();
         }
     }

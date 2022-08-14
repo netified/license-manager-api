@@ -39,7 +39,7 @@ namespace LicenseManager.Api.Data.Entities
         public string UserName { get; set; }
         public string Email { get; set; }
         public bool Prenium { get; set; }
-        public Guid DefaultOrganization { get; set; }
+        public Guid DefaultTenant { get; set; }
 
         #endregion Data
 
