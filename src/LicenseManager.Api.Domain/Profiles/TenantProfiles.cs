@@ -67,6 +67,7 @@ namespace LicenseManager.Api.Domain.Models
         {
             RuleFor(x => x.Name).NotEmpty();
             RuleFor(x => x.Name).Length(4, 64);
+            RuleFor(x => x.Name).Must(x=>!x.StartsWith("Personal", StringComparison.InvariantCultureIgnoreCase));
             RuleFor(x => x.Description).Length(0, 128);
         }
     }
