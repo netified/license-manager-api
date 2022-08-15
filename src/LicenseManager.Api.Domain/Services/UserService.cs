@@ -74,7 +74,10 @@ public class UserService
     public async Task<PagedResult<UserEntity>> ListAsync(string? filters, string? sorts, int? page, int? pageSize, CancellationToken stoppingToken = default)
     {
         var request = new SieveModel() { Filters = filters, Sorts = sorts, Page = page, PageSize = pageSize };
-        var query = _dataStore.Set<UserEntity>().AsNoTracking();
+        var userId = await GetIdentifierAsync(stoppingToken);
+        var query = _dataStore.Set<UserEntity>()
+            .AsNoTracking()
+            .Where(x => (!x.Private) || (x.Private && x.Id == userId));
         return await _sieveProcessor.GetPagedAsync(query, request, stoppingToken);
     }
 
