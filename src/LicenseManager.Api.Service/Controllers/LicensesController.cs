@@ -79,7 +79,7 @@ namespace LicenseManager.Api.Service.Controllers
         /// </summary>
         /// <param name="licenseId">The license identifier.</param>
         /// <param name="stoppingToken">The cancellation token.</param>
-        [HttpGet("licenses{licenseId:guid}")]
+        [HttpGet("licenses/{licenseId:guid}")]
         [Authorize(Policy = "LicenseReader")]
         [ProducesResponseType(typeof(ICollection<LicenseDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<LicenseDto>> GetAsync(Guid licenseId, CancellationToken stoppingToken = default)
