@@ -172,15 +172,15 @@ namespace LicenseManager.Api.Service.Controllers
         /// ***( Prenium Feature )***
         /// </remarks>
         /// <param name="tenantId">The tenant identifier.</param>
-        /// <param name="userId">The user identifier.</param>
+        /// <param name="permissionId">The permission identifier.</param>
         /// <param name="stoppingToken">The cancellation token.</param>
         [Authorize(Policy = "Prenium")]
         [Authorize(Policy = "TenantManager")]
-        [HttpDelete("{tenantId:guid}/permissions/{userId:guid}")]
+        [HttpDelete("{tenantId:guid}/permissions/{permissionId:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemovePermissionAsync(Guid tenantId, Guid userId, CancellationToken stoppingToken = default)
+        public async Task<ActionResult> RemovePermissionAsync(Guid tenantId, Guid permissionId, CancellationToken stoppingToken = default)
         {
-            await _tenantService.RemovePermissionAsync(tenantId, userId, stoppingToken);
+            await _tenantService.RemovePermissionAsync(tenantId, permissionId, stoppingToken);
             return NoContent();
         }
     }
