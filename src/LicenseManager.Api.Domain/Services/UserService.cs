@@ -166,9 +166,10 @@ public class UserService
     private async Task InitializeTenantAsync(UserEntity userEntity, CancellationToken stoppingToken = default)
     {
         // Create default tenant
+        var tenantId = userEntity.Id.GetHashCode().ToString().Replace("-", "");
         var tenantEntity = new TenantEntity()
         {
-            Name = "Personal",
+            Name = $"Personal #{tenantId}",
             Type = TenantType.Personal,
             Description = "Personal organization",
         };
@@ -177,7 +178,7 @@ public class UserService
             userId: userEntity.Id,
             cancellationToken: stoppingToken);
 
-        // Add tenant permission
+        // Add default permission
         var permissionEntity = new PermissionEntity()
         {
             UserId = userEntity.Id,
