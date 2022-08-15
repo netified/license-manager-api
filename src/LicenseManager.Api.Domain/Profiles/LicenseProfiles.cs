@@ -76,7 +76,9 @@ namespace LicenseManager.Api.Domain.Profiles
             RuleFor(x => x.Duration).InclusiveBetween(1, 1460);
 
             RuleFor(x => x.Type).NotNull();
-            RuleFor(x => x.Type).Must(x => x.Equals("trial", StringComparison.InvariantCultureIgnoreCase) || x.Equals("standard", StringComparison.InvariantCultureIgnoreCase));
+            RuleFor(x => x.Type).Must(x => 
+                x.Equals(LicenseType.Trial.ToString(), StringComparison.InvariantCultureIgnoreCase) ||
+                x.Equals(LicenseType.Standard.ToString(), StringComparison.InvariantCultureIgnoreCase));
         }
     }
 
