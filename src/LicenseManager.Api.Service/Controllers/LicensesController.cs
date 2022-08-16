@@ -53,7 +53,7 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Get all licenses for a product.
+        /// 🧊 Get all licenses.
         /// </summary>
         /// <remarks>
         /// This endpoint allows you to sort, filter and add paging features to retrieve data the way you want it. \
@@ -75,7 +75,7 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Getting a license.
+        /// 🧊 Get a license.
         /// </summary>
         /// <param name="licenseId">The license identifier.</param>
         /// <param name="stoppingToken">The cancellation token.</param>
@@ -89,10 +89,10 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Add a license to the product.
+        /// 🧊 Add a license.
         /// </summary>
         /// <param name="productId">The product identifier.</param>
-        /// <param name="request">The request.</param>
+        /// <param name="request">The license request.</param>
         /// <param name="stoppingToken">The cancellation token.</param>
         [HttpPost("products/{productId:guid}/licenses")]
         [Authorize(Policy = "ProductManager")]
@@ -107,10 +107,10 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Import a license into the product.
+        /// 🧊 Import a license.
         /// </summary>
         /// <param name="productId">The product identifier.</param>
-        /// <param name="license">The license.</param>
+        /// <param name="license">The saved license.</param>
         /// <param name="stoppingToken">The cancellation token.</param>
         [HttpPost("products/{productId:guid}/licenses/import")]
         [Authorize(Policy = "Prenium")]
@@ -139,7 +139,7 @@ namespace LicenseManager.Api.Service.Controllers
         [HttpGet("licenses/{licenseId:guid}/download")]
         [Authorize(Policy = "LicenseManager")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GenerateAsync(Guid licenseId, CancellationToken stoppingToken = default)
+        public async Task<ActionResult> DownloadAsync(Guid licenseId, CancellationToken stoppingToken = default)
         {
             var license = await _licenseService.GenerateAsync(licenseId, stoppingToken);
             using var memStream = new MemoryStream();
