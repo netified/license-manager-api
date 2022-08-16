@@ -50,7 +50,7 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 List all the tenant products.
+        /// 🧊 List all the products.
         /// </summary>
         /// <remarks>
         /// This endpoint allows you to sort, filter and add paging features to retrieve data the way you want it. \
@@ -72,13 +72,13 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Add a product to the tenant.
+        /// 🧊 Add a product.
         /// </summary>
         /// <remarks>
         /// Only owner of the tenant or the product will be able to use this API.
         /// </remarks>
         /// <param name="tenantId">The tenant identifier.</param>
-        /// <param name="request">The request.</param>
+        /// <param name="request">The product request.</param>
         /// <param name="stoppingToken">The cancellation token.</param>
         [HttpPost("tenants/{tenantId}/products")]
         [Authorize(Policy = "TenantManager")]
@@ -94,7 +94,7 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Import a product into the tenant.
+        /// 🧊 Import a product.
         /// </summary>
         /// <remarks>
         /// Only owner of the tenant or the product will be able to use this API. \
@@ -132,7 +132,7 @@ namespace LicenseManager.Api.Service.Controllers
         }
 
         /// <summary>
-        /// 🧊 Getting a product.
+        /// 🧊 Get a product.
         /// </summary>
         /// <remarks>
         /// Only users of the tenant or the product will be able to use this API.
