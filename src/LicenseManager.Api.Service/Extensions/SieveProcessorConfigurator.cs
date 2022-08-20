@@ -18,6 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+using LicenseManager.Api.Data.Entities;
 using Microsoft.Extensions.Options;
 using Sieve.Models;
 using Sieve.Services;
@@ -40,6 +41,17 @@ public class SieveProcessorConfigurator : SieveProcessor
     /// <returns></returns>
     protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
     {
+        #region Product
+
+        mapper.Property<ProductEntity>(p => p.Id).CanFilter();
+        mapper.Property<ProductEntity>(p => p.Name).CanFilter().CanSort();
+        mapper.Property<ProductEntity>(p => p.Description).CanFilter().CanSort();
+        mapper.Property<ProductEntity>(p => p.Company).CanFilter().CanSort();
+        mapper.Property<ProductEntity>(p => p.CreatedBy).CanFilter().CanSort();
+        mapper.Property<ProductEntity>(p => p.CreatedUtc).CanFilter().CanSort();
+
+        #endregion Product
+
         return mapper;
     }
 }
