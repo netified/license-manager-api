@@ -5,7 +5,7 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["src/LicenseManager.Api.Service/LicenseManager.Api.Service.csproj", "src/LicenseManager.Api.Service/"]
 COPY ["src/LicenseManager.Api.Domain/LicenseManager.Api.Domain.csproj", "src/LicenseManager.Api.Domain/"]
