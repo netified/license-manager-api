@@ -16,7 +16,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Install dotnet SDK ${{ inputs.dotnet-version }}
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
     - name: Build Solution
