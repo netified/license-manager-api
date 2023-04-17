@@ -17,7 +17,7 @@ jobs:
         username: ${{github.actor}}
         password: ${{secrets.GITHUB_TOKEN}} 
      - name: Publish release docker image
-       uses: docker/build-push-action@v3
+       uses: docker/build-push-action@v4
        with:
          context: .
          push: true
@@ -39,7 +39,7 @@ jobs:
         username: ${{github.actor}}
         password: ${{secrets.GITHUB_TOKEN}} 
      - name: Publish develop docker image
-       uses: docker/build-push-action@v3
+       uses: docker/build-push-action@v4
        with:
          context: .
          push: true
